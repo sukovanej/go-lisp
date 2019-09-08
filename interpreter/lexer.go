@@ -22,6 +22,10 @@ type Token struct {
 func GetToken(reader *bufio.Reader) Token {
 	r, _, err := reader.ReadRune()
 
+	for r == ' ' || r == '\n' || r == '\t' {
+		r, _, err = reader.ReadRune()
+	}
+
 	if r == '(' {
 		return Token{string(r), TOKEN_LPAR}
 	} else if r == ')' {

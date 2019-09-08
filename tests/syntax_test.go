@@ -19,17 +19,25 @@ func compareSyntax(left SyntaxValue, right SyntaxValue) bool {
 	case []SyntaxValue:
 		switch right.(type) {
 		case []SyntaxValue:
+			if len(left.([]SyntaxValue)) != len(right.([]SyntaxValue)) {
+				return false
+			}
+
 			for i, _ := range left.([]SyntaxValue) {
 				if !compareSyntax(left.([]SyntaxValue)[i], right.([]SyntaxValue)[i]) {
 					return false
+				} else {
+					return true
 				}
 			}
 		default:
 			return false
 		}
+	case nil:
+		return left == right
 	}
 
-	return true
+	return false
 }
 
 var expectedSyntax, outputSyntax SyntaxValue
@@ -111,6 +119,71 @@ func TestSyntaxWithInner(t *testing.T) {
 			SyntaxValue(Token{"3", SYMBOL}),
 		},
 	)
+	outputSyntax = GetSyntax(input)
+	if !compareSyntax(expectedSyntax, outputSyntax) {
+		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
+	}
+
+	input = bufio.NewReader(strings.NewReader("((fn (x) (+ x 1)) 1)"))
+	expectedSyntax = SyntaxValue(
+		[]SyntaxValue{
+			SyntaxValue([]SyntaxValue{
+				SyntaxValue(Token{"fn", SYMBOL}),
+				SyntaxValue(
+					[]SyntaxValue{
+						SyntaxValue(Token{"x", SYMBOL}),
+					},
+				),
+				SyntaxValue(
+					[]SyntaxValue{
+						SyntaxValue(Token{"+", SYMBOL}),
+						SyntaxValue(Token{"x", SYMBOL}),
+						SyntaxValue(Token{"1", SYMBOL}),
+					},
+				),
+			}),
+			SyntaxValue(Token{"1", SYMBOL}),
+		},
+	)
+	outputSyntax = GetSyntax(input)
+	if !compareSyntax(expectedSyntax, outputSyntax) {
+		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
+	}
+}
+
+func TestSyntaxMultipleStatements(t *testing.T) {
+	input = bufio.NewReader(strings.NewReader("(test (fn 1 2) value)\n(var x)"))
+
+	expectedSyntax = SyntaxValue(
+		[]SyntaxValue{
+			SyntaxValue(Token{"test", SYMBOL}),
+			SyntaxValue(
+				[]SyntaxValue{
+					SyntaxValue(Token{"fn", SYMBOL}),
+					SyntaxValue(Token{"1", SYMBOL}),
+					SyntaxValue(Token{"2", SYMBOL}),
+				},
+			),
+			SyntaxValue(Token{"value", SYMBOL}),
+		},
+	)
+	outputSyntax = GetSyntax(input)
+	if !compareSyntax(expectedSyntax, outputSyntax) {
+		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
+	}
+
+	expectedSyntax = SyntaxValue(
+		[]SyntaxValue{
+			SyntaxValue(Token{"var", SYMBOL}),
+			SyntaxValue(Token{"x", SYMBOL}),
+		},
+	)
+	outputSyntax = GetSyntax(input)
+	if !compareSyntax(expectedSyntax, outputSyntax) {
+		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
+	}
+
+	expectedSyntax = nil
 	outputSyntax = GetSyntax(input)
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)

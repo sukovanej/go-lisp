@@ -24,6 +24,10 @@ func GetSyntax(reader *bufio.Reader) SyntaxValue {
 		return getSyntax(reader)
 	}
 
+	if token.Type == END {
+		return nil
+	}
+
 	panic("Syntax error.")
 }
 

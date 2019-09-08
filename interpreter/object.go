@@ -21,24 +21,16 @@ type Env struct {
 
 func (env *Env) GetEnvSymbol(name string) (Object, bool) {
 	item, ok := env.Objects[name]
+	if !ok && env.Parent != nil {
+		return env.Parent.GetEnvSymbol(name)
+	}
 	return item, ok
 }
 
-// Number object
+type NilObject struct{}
 
-type NumberObject struct {
-	Integer int
-}
-
-func (n NumberObject) GetSlots() map[string]Object {
-	return map[string]Object{
-		"+": CallableObject{func(args []Object, env *Env) Object {
-			first := args[0].(NumberObject)
-			second := args[1].(NumberObject)
-
-			return NumberObject{first.Integer + second.Integer}
-		}},
-	}
+func (_ NilObject) GetSlots() map[string]Object {
+	return map[string]Object{}
 }
 
 // Function object

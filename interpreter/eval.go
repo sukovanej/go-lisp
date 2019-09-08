@@ -8,10 +8,17 @@ import (
 
 func Eval(reader *bufio.Reader, env *Env) Object {
 	syntaxTree := GetSyntax(reader)
-	return eval(syntaxTree, env)
+	var lastResult Object
+
+	for syntaxTree != nil {
+		lastResult = EvalSyntax(syntaxTree, env)
+		syntaxTree = GetSyntax(reader)
+	}
+
+	return lastResult
 }
 
-func eval(value SyntaxValue, env *Env) Object {
+func EvalSyntax(value SyntaxValue, env *Env) Object {
 	switch value.(type) {
 	case Token:
 		return evalSymbol(value.(Token), env)
@@ -35,32 +42,41 @@ func evalSymbol(token Token, env *Env) Object {
 }
 
 func evalFunction(list []SyntaxValue, env *Env) Object {
-	function := eval(list[0], env)
-	args := []Object{}
+	function := EvalSyntax(list[0], env)
+	switch function.(type) {
+	case CallableObject:
+		args := []Object{}
 
-	for _, arg := range list[1:len(list)] {
-		value := eval(arg, env)
-		args = append(args, value)
+		for _, arg := range list[1:len(list)] {
+			value := EvalSyntax(arg, env)
+			args = append(args, value)
+		}
+
+		return function.(CallableObject).Callable(args, env)
+	case FormObject:
+		args := list[1:len(list)]
+		return function.(FormObject).Callable(args, env)
+	default:
+		panic("First item must be callable")
 	}
-
-	return function.(CallableObject).Callable(args, env)
 }
 
 func GetMainEnv() *Env {
 	return &Env{
 		map[string]Object{
-			"+": CallableObject{func(args []Object, env *Env) Object {
-				plusFunc, ok := GetSlot(args[0], "+")
-				if !ok {
-					panic("Object is not addable.")
-				}
-				plusCallable := plusFunc.(CallableObject).Callable
-				result := args[0]
-				for _, obj := range args[1:len(args)] {
-					result = plusCallable([]Object{result, obj}, nil)
-				}
-				return result
-			}},
+			"+":       CallableObject{BinaryOperatorFunc("+")},
+			"-":       CallableObject{BinaryOperatorFunc("-")},
+			"*":       CallableObject{BinaryOperatorFunc("*")},
+			"/":       CallableObject{BinaryOperatorFunc("/")},
+			"^":       CallableObject{BinaryOperatorFunc("^")},
+			"fn":      FormObject{CreateLambdaForm},
+			"set":     FormObject{SetForm},
+			"#t":      BoolObject{true},
+			"#f":      BoolObject{false},
+			"==":      CallableObject{BinaryOperatorFunc("==")},
+			"#nil":    NilObject{},
+			"if":      FormObject{IfForm},
+			"!assert": CallableObject{AssertCallable},
 		},
 		nil,
 	}
