@@ -1,16 +1,9 @@
 package interpreter
 
+// Object
+
 type Object interface {
 	GetSlots() map[string]Object
-}
-
-type Env struct {
-	Objects map[string]Object
-	Parent  *Env
-}
-
-type SlotNotFoundError struct {
-	error
 }
 
 func GetSlot(o Object, slotName string) (Object, bool) {
@@ -19,15 +12,27 @@ func GetSlot(o Object, slotName string) (Object, bool) {
 	return item, ok
 }
 
+// Env
+
+type Env struct {
+	Objects map[string]Object
+	Parent  *Env
+}
+
+func (env *Env) GetEnvSymbol(name string) (Object, bool) {
+	item, ok := env.Objects[name]
+	return item, ok
+}
+
 // Number object
 
 type NumberObject struct {
-	Integer int64
+	Integer int
 }
 
 func (n NumberObject) GetSlots() map[string]Object {
 	return map[string]Object{
-		"__+__": CallableObject{func(args []Object, env *Env) Object {
+		"+": CallableObject{func(args []Object, env *Env) Object {
 			first := args[0].(NumberObject)
 			second := args[1].(NumberObject)
 

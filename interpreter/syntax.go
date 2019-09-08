@@ -21,26 +21,31 @@ func GetSyntax(reader *bufio.Reader) SyntaxValue {
 	}
 
 	if token.Type == TOKEN_LPAR {
-		list := []SyntaxValue{}
-		token = GetToken(reader)
+		return getSyntax(reader)
+	}
 
-		for token.Type != END {
-			if token.Type == SYMBOL {
-				list = append(list, SyntaxValue(token))
-			} else if token.Type == TOKEN_LPAR {
-				list = append(list, GetSyntax(reader))
-			} else if token.Type == TOKEN_RPAR {
-				break
-			}
+	panic("Syntax error.")
+}
 
-			token = GetToken(reader)
+func getSyntax(reader *bufio.Reader) SyntaxValue {
+	list := []SyntaxValue{}
+	token := GetToken(reader)
+
+	for token.Type != END && token.Type != TOKEN_RPAR {
+		if token.Type == SYMBOL {
+			list = append(list, SyntaxValue(token))
+		} else if token.Type == TOKEN_LPAR {
+			list = append(list, getSyntax(reader))
+		} else if token.Type == TOKEN_RPAR {
+			break
 		}
-		return SyntaxValue(list)
+
+		token = GetToken(reader)
 	}
 
 	if token.Type == END {
 		panic("Unxpected end of file.")
 	}
 
-	panic("Syntax error.")
+	return SyntaxValue(list)
 }
