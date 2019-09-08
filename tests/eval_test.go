@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	. "github.com/sukovanej/go-lisp/interpreter"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -130,5 +131,19 @@ func TestEvalFactorial(t *testing.T) {
 	outputObject = Eval(input, env)
 	if !compareObject(outputObject, expectedObject) {
 		t.Errorf("%v != %v.", expectedObject, outputObject)
+	}
+}
+
+func TestCustomTests(t *testing.T) {
+	env := GetMainEnv()
+	matches, err := filepath.Glob("./*.gisp")
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range matches {
+		fileEnv := &Env{map[string]Object{}, env}
+		EvalFile(file, fileEnv)
 	}
 }

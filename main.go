@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	. "github.com/sukovanej/go-lisp/interpreter"
+	"os"
+)
 
 func main() {
-	fmt.Println("vim-go")
+	if len(os.Args) == 2 {
+		EvalFile(os.Args[1], GetMainEnv())
+	}
 }

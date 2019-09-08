@@ -3,8 +3,17 @@ package interpreter
 import (
 	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 )
+
+func EvalFile(file string, env *Env) Object {
+	f, err := os.Open(file)
+	if err != nil {
+		panic(err)
+	}
+	return Eval(bufio.NewReader(f), env)
+}
 
 func Eval(reader *bufio.Reader, env *Env) Object {
 	syntaxTree := GetSyntax(reader)
@@ -30,7 +39,9 @@ func EvalSyntax(value SyntaxValue, env *Env) Object {
 }
 
 func evalSymbol(token Token, env *Env) Object {
-	if num, err := strconv.Atoi(token.Symbol); err == nil {
+	if token.Type == SYMBOL_STRING {
+		return StringObject{token.Symbol}
+	} else if num, err := strconv.Atoi(token.Symbol); err == nil {
 		return NumberObject{num}
 	} else {
 		obj, ok := env.GetEnvSymbol(token.Symbol)
@@ -77,7 +88,9 @@ func GetMainEnv() *Env {
 			"#nil":    NilObject{},
 			"if":      FormObject{IfForm},
 			"!assert": CallableObject{AssertCallable},
+			"print":   CallableObject{PrintCallable},
 		},
 		nil,
 	}
+
 }

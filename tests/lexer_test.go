@@ -8,10 +8,10 @@ import (
 )
 
 var expectedToken Token
-var input *bufio.Reader
+var inputLexer *bufio.Reader
 
 func TestToken(t *testing.T) {
-	input = bufio.NewReader(strings.NewReader("(test)"))
+	inputLexer = bufio.NewReader(strings.NewReader("(test)"))
 	expectedResult := []Token{
 		Token{"(", TOKEN_LPAR},
 		Token{"test", SYMBOL},
@@ -20,13 +20,13 @@ func TestToken(t *testing.T) {
 	}
 
 	for _, token := range expectedResult {
-		expectedToken = GetToken(input)
+		expectedToken = GetToken(inputLexer)
 		if token != expectedToken {
 			t.Errorf("%v != %v.", token, expectedToken)
 		}
 	}
 
-	input = bufio.NewReader(strings.NewReader("(symbol-1 symbol-2 (hello world))"))
+	inputLexer = bufio.NewReader(strings.NewReader("(symbol-1 symbol-2 (hello world))"))
 	expectedResult = []Token{
 		Token{"(", TOKEN_LPAR},
 		Token{"symbol-1", SYMBOL},
@@ -40,13 +40,13 @@ func TestToken(t *testing.T) {
 	}
 
 	for _, token := range expectedResult {
-		expectedToken = GetToken(input)
+		expectedToken = GetToken(inputLexer)
 		if token != expectedToken {
 			t.Errorf("%v != %v.", token, expectedToken)
 		}
 	}
 
-	input = bufio.NewReader(
+	inputLexer = bufio.NewReader(
 		strings.NewReader("(symbol-1 symbol-2 (hello world (fn 1 2)) another terms)"),
 	)
 	expectedResult = []Token{
@@ -69,7 +69,7 @@ func TestToken(t *testing.T) {
 	}
 
 	for _, token := range expectedResult {
-		expectedToken = GetToken(input)
+		expectedToken = GetToken(inputLexer)
 		if token != expectedToken {
 			t.Errorf("%v != %v.", token, expectedToken)
 		}
@@ -77,7 +77,7 @@ func TestToken(t *testing.T) {
 }
 
 func TestTokenMultipleStatements(t *testing.T) {
-	input = bufio.NewReader(strings.NewReader(" (test  (fn   1 2) value)  \n (var   x)  "))
+	inputLexer = bufio.NewReader(strings.NewReader(" (test  (fn   1 2) value)  \n (var   x)  "))
 
 	expectedResult := []Token{
 		Token{"(", TOKEN_LPAR},
@@ -97,13 +97,13 @@ func TestTokenMultipleStatements(t *testing.T) {
 	}
 
 	for _, token := range expectedResult {
-		expectedToken = GetToken(input)
+		expectedToken = GetToken(inputLexer)
 		if token != expectedToken {
 			t.Errorf("%v != %v.", token, expectedToken)
 		}
 	}
 
-	input = bufio.NewReader(strings.NewReader(`(set fact (fn (x) (
+	inputLexer = bufio.NewReader(strings.NewReader(`(set fact (fn (x) (
 		if (== x 1) 
 			1 
 			(* x (fact (- x 1))))))
@@ -148,7 +148,26 @@ func TestTokenMultipleStatements(t *testing.T) {
 	}
 
 	for _, token := range expectedResult {
-		expectedToken = GetToken(input)
+		expectedToken = GetToken(inputLexer)
+		if token != expectedToken {
+			t.Errorf("%v != %v.", token, expectedToken)
+		}
+	}
+}
+
+func TestTokenString(t *testing.T) {
+	inputLexer = bufio.NewReader(strings.NewReader("(test \"asdf asdf\" 1)"))
+	expectedResult := []Token{
+		Token{"(", TOKEN_LPAR},
+		Token{"test", SYMBOL},
+		Token{"asdf asdf", SYMBOL_STRING},
+		Token{"1", SYMBOL},
+		Token{")", TOKEN_RPAR},
+		Token{"", END},
+	}
+
+	for _, token := range expectedResult {
+		expectedToken = GetToken(inputLexer)
 		if token != expectedToken {
 			t.Errorf("%v != %v.", token, expectedToken)
 		}

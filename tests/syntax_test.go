@@ -41,29 +41,29 @@ func compareSyntax(left SyntaxValue, right SyntaxValue) bool {
 }
 
 var expectedSyntax, outputSyntax SyntaxValue
-var input *bufio.Reader
+var inputSyntax *bufio.Reader
 
 func TestSyntaxBasic(t *testing.T) {
-	input = bufio.NewReader(strings.NewReader("(test)"))
+	inputSyntax = bufio.NewReader(strings.NewReader("(test)"))
 	expectedSyntax = SyntaxValue(
 		[]SyntaxValue{
 			SyntaxValue(Token{"test", SYMBOL}),
 		},
 	)
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
 
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}
 
-	input = bufio.NewReader(strings.NewReader("(test value)"))
+	inputSyntax = bufio.NewReader(strings.NewReader("(test value)"))
 	expectedSyntax = SyntaxValue(
 		[]SyntaxValue{
 			SyntaxValue(Token{"test", SYMBOL}),
 			SyntaxValue(Token{"value", SYMBOL}),
 		},
 	)
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
 
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
@@ -71,7 +71,7 @@ func TestSyntaxBasic(t *testing.T) {
 }
 
 func TestSyntaxWithInner(t *testing.T) {
-	input = bufio.NewReader(strings.NewReader("(test (fn 1 2) value)"))
+	inputSyntax = bufio.NewReader(strings.NewReader("(test (fn 1 2) value)"))
 	expectedSyntax = SyntaxValue(
 		[]SyntaxValue{
 			SyntaxValue(Token{"test", SYMBOL}),
@@ -85,13 +85,13 @@ func TestSyntaxWithInner(t *testing.T) {
 			SyntaxValue(Token{"value", SYMBOL}),
 		},
 	)
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
 
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}
 
-	input = bufio.NewReader(strings.NewReader("(+ 1 2)"))
+	inputSyntax = bufio.NewReader(strings.NewReader("(+ 1 2)"))
 	expectedSyntax = SyntaxValue(
 		[]SyntaxValue{
 			SyntaxValue(Token{"+", SYMBOL}),
@@ -99,13 +99,13 @@ func TestSyntaxWithInner(t *testing.T) {
 			SyntaxValue(Token{"2", SYMBOL}),
 		},
 	)
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
 
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}
 
-	input = bufio.NewReader(strings.NewReader("(+ (+ 1 2) 3)"))
+	inputSyntax = bufio.NewReader(strings.NewReader("(+ (+ 1 2) 3)"))
 	expectedSyntax = SyntaxValue(
 		[]SyntaxValue{
 			SyntaxValue(Token{"+", SYMBOL}),
@@ -119,12 +119,12 @@ func TestSyntaxWithInner(t *testing.T) {
 			SyntaxValue(Token{"3", SYMBOL}),
 		},
 	)
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}
 
-	input = bufio.NewReader(strings.NewReader("((fn (x) (+ x 1)) 1)"))
+	inputSyntax = bufio.NewReader(strings.NewReader("((fn (x) (+ x 1)) 1)"))
 	expectedSyntax = SyntaxValue(
 		[]SyntaxValue{
 			SyntaxValue([]SyntaxValue{
@@ -145,14 +145,14 @@ func TestSyntaxWithInner(t *testing.T) {
 			SyntaxValue(Token{"1", SYMBOL}),
 		},
 	)
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}
 }
 
 func TestSyntaxMultipleStatements(t *testing.T) {
-	input = bufio.NewReader(strings.NewReader("(test (fn 1 2) value)\n(var x)"))
+	inputSyntax = bufio.NewReader(strings.NewReader("(test (fn 1 2) value)\n(var x)"))
 
 	expectedSyntax = SyntaxValue(
 		[]SyntaxValue{
@@ -167,7 +167,7 @@ func TestSyntaxMultipleStatements(t *testing.T) {
 			SyntaxValue(Token{"value", SYMBOL}),
 		},
 	)
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}
@@ -178,13 +178,29 @@ func TestSyntaxMultipleStatements(t *testing.T) {
 			SyntaxValue(Token{"x", SYMBOL}),
 		},
 	)
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}
 
 	expectedSyntax = nil
-	outputSyntax = GetSyntax(input)
+	outputSyntax = GetSyntax(inputSyntax)
+	if !compareSyntax(expectedSyntax, outputSyntax) {
+		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
+	}
+}
+
+func TestSyntaxString(t *testing.T) {
+	inputSyntax = bufio.NewReader(strings.NewReader(`(test "hello world" 1)`))
+
+	expectedSyntax = SyntaxValue(
+		[]SyntaxValue{
+			SyntaxValue(Token{"test", SYMBOL}),
+			SyntaxValue(Token{"hello world", SYMBOL_STRING}),
+			SyntaxValue(Token{"1", SYMBOL}),
+		},
+	)
+	outputSyntax = GetSyntax(inputSyntax)
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}

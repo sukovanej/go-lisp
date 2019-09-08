@@ -11,6 +11,7 @@ const (
 	TOKEN_LPAR TokenType = iota
 	TOKEN_RPAR
 	SYMBOL
+	SYMBOL_STRING
 	END
 )
 
@@ -34,6 +35,14 @@ func GetToken(reader *bufio.Reader) Token {
 			reader.UnreadRune()
 		}
 		return Token{string(r), TOKEN_RPAR}
+	} else if r == '"' {
+		str := ""
+		r, _, err = reader.ReadRune()
+		for r != '"' {
+			str += string(r)
+			r, _, err = reader.ReadRune()
+		}
+		return Token{str, SYMBOL_STRING}
 	} else if err == io.EOF {
 		return Token{"", END}
 	}
