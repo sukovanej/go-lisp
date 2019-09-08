@@ -1,5 +1,7 @@
 package interpreter
 
+import "strconv"
+
 // Number object
 
 type NumberObject struct {
@@ -41,12 +43,19 @@ func equalNumbers(args []Object, env *Env) Object {
 	return BoolObject{first.Integer == second.Integer}
 }
 
+func strNumbers(args []Object, _ *Env) Object {
+	value := args[0].(NumberObject)
+
+	return StringObject{strconv.Itoa(value.Integer)}
+}
+
 func (n NumberObject) GetSlots() map[string]Object {
 	return map[string]Object{
-		"__+__":  CallableObject{addNumbers},
-		"__-__":  CallableObject{subtractNumbers},
-		"__*__":  CallableObject{multiplyNumbers},
-		"__/__":  CallableObject{divideNumbers},
-		"__==__": CallableObject{equalNumbers},
+		"__+__":   CallableObject{addNumbers},
+		"__-__":   CallableObject{subtractNumbers},
+		"__*__":   CallableObject{multiplyNumbers},
+		"__/__":   CallableObject{divideNumbers},
+		"__==__":  CallableObject{equalNumbers},
+		"__str__": CallableObject{strNumbers},
 	}
 }

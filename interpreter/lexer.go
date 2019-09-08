@@ -52,7 +52,7 @@ func GetToken(reader *bufio.Reader) Token {
 	for {
 		r, _, err = reader.ReadRune()
 
-		if r == ' ' {
+		if r == ' ' || r == '\n' || r == '\t' {
 			break
 		}
 

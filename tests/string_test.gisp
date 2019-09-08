@@ -1,1 +1,1 @@
-(print "hello world")
+(!assert (+ "hello," " world") "hello, world")

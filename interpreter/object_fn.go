@@ -8,7 +8,7 @@ func (o FormObject) GetSlots() map[string]Object {
 	return map[string]Object{}
 }
 
-func createLambdaFunction(declared_args []SyntaxValue, body SyntaxValue, env *Env) CallableObject {
+func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *Env) CallableObject {
 	return CallableObject{func(args []Object, _ *Env) Object {
 		internal_env := &Env{map[string]Object{}, env}
 		for i, declared_arg := range declared_args {
@@ -19,14 +19,19 @@ func createLambdaFunction(declared_args []SyntaxValue, body SyntaxValue, env *En
 				panic("not defined behaviour")
 			}
 		}
-		return EvalSyntax(body, internal_env)
+
+		var last Object
+		for _, statement := range body {
+			last = EvalSyntax(statement, internal_env)
+		}
+		return last
 	}}
 }
 
 func CreateLambdaForm(args []SyntaxValue, env *Env) Object {
-	if len(args) != 2 {
+	if len(args) < 2 {
 		panic("Wrong number of arguments")
 	}
 
-	return createLambdaFunction(args[0].([]SyntaxValue), args[1], env)
+	return createLambdaFunction(args[0].([]SyntaxValue), args[1:], env)
 }

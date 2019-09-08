@@ -89,6 +89,10 @@ func GetMainEnv() *Env {
 			"if":      FormObject{IfForm},
 			"!assert": CallableObject{AssertCallable},
 			"print":   CallableObject{PrintCallable},
+			"println": CallableObject{PrintlnCallable},
+			"->":      FormObject{GetAttrForm},
+			"set->":   FormObject{SetAttrForm},
+			"struct":  FormObject{CreateStructForm},
 		},
 		nil,
 	}

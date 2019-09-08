@@ -1,0 +1,22 @@
+(set Person (fn (name age)
+    (set person (struct name age))
+    (set-> person name name)
+    (set-> person age age)
+    person
+    ))
+
+(set print-person (fn (person) (println (-> person name) " is " (-> person age))))
+    
+
+(set adam (struct name age))
+(set-> adam name "Adam")
+(set-> adam age 12)
+
+(set john (Person "John" 20))
+
+(set martin (Person "Martin" 30))
+(set-> martin age 29)
+
+(print-person adam)
+(print-person john)
+(print-person martin)

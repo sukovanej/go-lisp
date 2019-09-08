@@ -30,7 +30,11 @@ func (env *Env) GetEnvSymbol(name string) (Object, bool) {
 type NilObject struct{}
 
 func (_ NilObject) GetSlots() map[string]Object {
-	return map[string]Object{}
+	return map[string]Object{
+		"__str__": CallableObject{func(_ []Object, _ *Env) Object {
+			return StringObject{"Nil"}
+		}},
+	}
 }
 
 // Function object

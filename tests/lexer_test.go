@@ -173,3 +173,47 @@ func TestTokenString(t *testing.T) {
 		}
 	}
 }
+func TestTokenStruct(t *testing.T) {
+	inputLexer = bufio.NewReader(strings.NewReader(`
+(set person (struct
+    name
+    age
+))
+
+(set-> person name "Adam")
+(print (-> person name))
+`))
+	expectedResult := []Token{
+		Token{"(", TOKEN_LPAR},
+		Token{"set", SYMBOL},
+		Token{"person", SYMBOL},
+		Token{"(", TOKEN_LPAR},
+		Token{"struct", SYMBOL},
+		Token{"name", SYMBOL},
+		Token{"age", SYMBOL},
+		Token{")", TOKEN_RPAR},
+		Token{")", TOKEN_RPAR},
+		Token{"(", TOKEN_LPAR},
+		Token{"set->", SYMBOL},
+		Token{"person", SYMBOL},
+		Token{"name", SYMBOL},
+		Token{"Adam", SYMBOL_STRING},
+		Token{")", TOKEN_RPAR},
+		Token{"(", TOKEN_LPAR},
+		Token{"print", SYMBOL},
+		Token{"(", TOKEN_LPAR},
+		Token{"->", SYMBOL},
+		Token{"person", SYMBOL},
+		Token{"name", SYMBOL},
+		Token{")", TOKEN_RPAR},
+		Token{")", TOKEN_RPAR},
+		Token{"", END},
+	}
+
+	for _, token := range expectedResult {
+		expectedToken = GetToken(inputLexer)
+		if token != expectedToken {
+			t.Errorf("%v != %v.", token, expectedToken)
+		}
+	}
+}
