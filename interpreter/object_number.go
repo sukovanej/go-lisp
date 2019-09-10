@@ -38,9 +38,14 @@ func divideNumbers(args []Object, env *Env) Object {
 
 func equalNumbers(args []Object, env *Env) Object {
 	first := args[0].(NumberObject)
-	second := args[1].(NumberObject)
 
-	return BoolObject{first.Integer == second.Integer}
+	switch args[1].(type) {
+	case NumberObject:
+		second := args[1].(NumberObject)
+		return BoolObject{first.Integer == second.Integer}
+	default:
+		return BoolObject{false}
+	}
 }
 
 func strNumbers(args []Object, _ *Env) Object {

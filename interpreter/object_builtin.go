@@ -2,7 +2,7 @@ package interpreter
 
 import "fmt"
 
-func BinaryOperatorFunc(operatorName string) func([]Object, *Env) Object {
+func OperatorFunc(operatorName string) func([]Object, *Env) Object {
 	return func(args []Object, env *Env) Object {
 		operatorFunc, ok := GetSlot(args[0], "__"+operatorName+"__")
 		if !ok {
@@ -11,7 +11,7 @@ func BinaryOperatorFunc(operatorName string) func([]Object, *Env) Object {
 		operatorCallable := operatorFunc.(CallableObject).Callable
 		result := args[0]
 		for _, obj := range args[1:len(args)] {
-			result = operatorCallable([]Object{result, obj}, nil)
+			result = operatorCallable([]Object{result, obj}, env)
 		}
 		return result
 	}
@@ -46,11 +46,16 @@ func PrintCallable(args []Object, env *Env) Object {
 		if !ok {
 			panic("__str__ slot not found.")
 		}
-		stringObject := operatorFunc.(CallableObject).Callable([]Object{obj}, nil).(StringObject)
-		fmt.Print(stringObject.String)
+		stringObject := operatorFunc.(CallableObject).Callable([]Object{obj}, env)
+		switch stringObject.(type) {
+		case StringObject:
+			fmt.Print(stringObject.(StringObject).String)
+		default:
+			panic("__str__ must return string.")
+		}
 	}
 
-	nilObject, _ := env.GetEnvSymbol("nil")
+	nilObject, _ := env.GetEnvSymbol("#nil")
 	return nilObject
 }
 
@@ -67,6 +72,18 @@ func CreateStructForm(slots []SyntaxValue, env *Env) Object {
 	for _, slot := range slots {
 		slotObjects[slot.(Token).Symbol] = nilObject
 	}
+
+	slotObjects["__str__"] = CallableObject{func(obj []Object, env *Env) Object {
+		result := "<struct"
+
+		for name, item := range obj[0].GetSlots() {
+			result += fmt.Sprintf("%s=%v", name, item)
+		}
+
+		result += ">"
+		return StringObject{result}
+	}}
+
 	return StructObject{slotObjects}
 }
 
@@ -74,7 +91,8 @@ func GetAttrForm(args []SyntaxValue, env *Env) Object {
 	if len(args) != 2 {
 		panic("Unexpected number of arguments")
 	}
-	slot, ok := GetSlot(EvalSyntax(args[0], env), args[1].(Token).Symbol)
+	obj := EvalSyntax(args[0], env)
+	slot, ok := GetSlot(obj, args[1].(Token).Symbol)
 	if !ok {
 		panic("Slot not found")
 	}
@@ -95,4 +113,18 @@ func SetAttrForm(args []SyntaxValue, env *Env) Object {
 	object := EvalSyntax(args[2], env)
 	slots[args[1].(Token).Symbol] = object
 	return object
+}
+
+func NotEqualOperator(args []Object, env *Env) Object {
+	result := OperatorFunc("==")(args, env).(BoolObject)
+	return BoolObject{!result.Value}
+}
+
+func StrCallable(args []Object, env *Env) Object {
+	operatorFunc, ok := GetSlot(args[0], "__str__")
+	if !ok {
+		panic("__str__ slot not found.")
+	}
+	operatorCallable := operatorFunc.(CallableObject).Callable
+	return operatorCallable(args, env)
 }

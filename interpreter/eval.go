@@ -75,16 +75,17 @@ func evalFunction(list []SyntaxValue, env *Env) Object {
 func GetMainEnv() *Env {
 	return &Env{
 		map[string]Object{
-			"+":       CallableObject{BinaryOperatorFunc("+")},
-			"-":       CallableObject{BinaryOperatorFunc("-")},
-			"*":       CallableObject{BinaryOperatorFunc("*")},
-			"/":       CallableObject{BinaryOperatorFunc("/")},
-			"^":       CallableObject{BinaryOperatorFunc("^")},
+			"+":       CallableObject{OperatorFunc("+")},
+			"-":       CallableObject{OperatorFunc("-")},
+			"*":       CallableObject{OperatorFunc("*")},
+			"/":       CallableObject{OperatorFunc("/")},
+			"^":       CallableObject{OperatorFunc("^")},
 			"fn":      FormObject{CreateLambdaForm},
 			"set":     FormObject{SetForm},
 			"#t":      BoolObject{true},
 			"#f":      BoolObject{false},
-			"==":      CallableObject{BinaryOperatorFunc("==")},
+			"==":      CallableObject{OperatorFunc("==")},
+			"!=":      CallableObject{NotEqualOperator},
 			"#nil":    NilObject{},
 			"if":      FormObject{IfForm},
 			"!assert": CallableObject{AssertCallable},
@@ -93,6 +94,8 @@ func GetMainEnv() *Env {
 			"->":      FormObject{GetAttrForm},
 			"set->":   FormObject{SetAttrForm},
 			"struct":  FormObject{CreateStructForm},
+			"defn":    FormObject{DefLambdaForm},
+			"str":     CallableObject{StrCallable},
 		},
 		nil,
 	}

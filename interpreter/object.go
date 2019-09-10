@@ -1,5 +1,9 @@
 package interpreter
 
+import (
+	"fmt"
+)
+
 // Object
 
 type Object interface {
@@ -27,6 +31,8 @@ func (env *Env) GetEnvSymbol(name string) (Object, bool) {
 	return item, ok
 }
 
+// Nil Object
+
 type NilObject struct{}
 
 func (_ NilObject) GetSlots() map[string]Object {
@@ -46,5 +52,8 @@ type CallableObject struct {
 func (n CallableObject) GetSlots() map[string]Object {
 	return map[string]Object{
 		"__call__": n,
+		"__str__": CallableObject{func(_ []Object, _ *Env) Object {
+			return StringObject{fmt.Sprintf("<callable at %p>", &n)}
+		}},
 	}
 }

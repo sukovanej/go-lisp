@@ -15,9 +15,15 @@ func addStrings(args []Object, env *Env) Object {
 
 func equalStrings(args []Object, env *Env) Object {
 	first := args[0].(StringObject)
-	second := args[1].(StringObject)
 
-	return BoolObject{first.String == second.String}
+	switch args[1].(type) {
+	case StringObject:
+		second := args[1].(StringObject)
+
+		return BoolObject{first.String == second.String}
+	default:
+		return BoolObject{false}
+	}
 }
 
 func (o StringObject) GetSlots() map[string]Object {

@@ -35,3 +35,9 @@ func CreateLambdaForm(args []SyntaxValue, env *Env) Object {
 
 	return createLambdaFunction(args[0].([]SyntaxValue), args[1:], env)
 }
+
+func DefLambdaForm(args []SyntaxValue, env *Env) Object {
+	lambda := CreateLambdaForm(args[1:], env)
+	env.Objects[args[0].(Token).Symbol] = lambda
+	return lambda
+}
