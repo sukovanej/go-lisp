@@ -31,6 +31,11 @@ func (env *Env) GetEnvSymbol(name string) (Object, bool) {
 	return item, ok
 }
 
+func (env *Env) SetSymbol(name string, obj Object) Object {
+	env.Objects[name] = obj
+	return obj
+}
+
 // Nil Object
 
 type NilObject struct{}

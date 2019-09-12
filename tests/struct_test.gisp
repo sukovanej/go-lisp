@@ -10,3 +10,12 @@
 
 (!assert (str john) "John is 20")
 (!assert (str martin) "Martin is 32")
+
+(defstruct Page title subtitle body)
+
+(defn page-str (p) (+ "Page: " (-> p title) ", " (-> p subtitle) " - " (-> p body)))
+
+(set main-page (Page "Title" "Subtitle" "Page content."))
+(set-> main-page __str__ page-str)
+
+(print main-page)

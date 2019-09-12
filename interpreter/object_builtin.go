@@ -23,7 +23,7 @@ func SetForm(args []SyntaxValue, env *Env) Object {
 	}
 
 	obj := EvalSyntax(args[1], env)
-	env.Objects[args[0].(Token).Symbol] = obj
+	env.SetSymbol(args[0].(Token).Symbol, obj)
 	return obj
 }
 
@@ -87,6 +87,20 @@ func CreateStructForm(slots []SyntaxValue, env *Env) Object {
 	return StructObject{slotObjects}
 }
 
+func DefStructForm(declared_args []SyntaxValue, env *Env) Object {
+	constructor := CallableObject{func(args []Object, _ *Env) Object {
+		structObject := CreateStructForm(declared_args[1:], env)
+		structSlots := structObject.GetSlots()
+		for i, _ := range declared_args[1:] {
+			structSlots[declared_args[i].(Token).Symbol] = args[i]
+		}
+		return structObject
+	}}
+
+	env.SetSymbol(declared_args[0].(Token).Symbol, constructor)
+	return constructor
+}
+
 func GetAttrForm(args []SyntaxValue, env *Env) Object {
 	if len(args) != 2 {
 		panic("Unexpected number of arguments")
@@ -127,4 +141,7 @@ func StrCallable(args []Object, env *Env) Object {
 	}
 	operatorCallable := operatorFunc.(CallableObject).Callable
 	return operatorCallable(args, env)
+}
+
+func ImportCallable(args []Object, env *Env) Object {
 }
