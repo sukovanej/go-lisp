@@ -100,6 +100,9 @@ func GetMainEnv() *Env {
 			"dict":      CallableObject{DictCallable},
 			"item":      CallableObject{SlotCallable("__item__", 2)},
 			"set-item":  CallableObject{SlotCallable("__set-item__", 3)},
+			"env":       CallableObject{EnvCallable},
+			"import":    CallableObject{ImportCallable},
+			"list":      CallableObject{ListCallable},
 		},
 		nil,
 	}

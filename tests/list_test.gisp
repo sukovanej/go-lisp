@@ -1,0 +1,11 @@
+(set my-list (list))
+
+(defn append (l) (-> l append))
+
+(append my-list 1)
+(append my-list 2)
+
+(println my-list)
+(println (list 1 2 3))
+
+(!assert my-list (list 1 2))

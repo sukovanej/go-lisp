@@ -89,6 +89,8 @@ func equalDicts(args []Object, env *Env) Object {
 
 			firstEntry = firstEntry.Next
 		}
+	default:
+		return BoolObject{false}
 	}
 	return BoolObject{true}
 }

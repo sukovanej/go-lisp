@@ -1,11 +1,18 @@
 package interpreter
 
+import "fmt"
+
 type FormObject struct {
 	Callable func([]SyntaxValue, *Env) Object
 }
 
 func (o FormObject) GetSlots() map[string]Object {
-	return map[string]Object{}
+	return map[string]Object{
+		"__call__": o,
+		"__str__": CallableObject{func(_ []Object, _ *Env) Object {
+			return StringObject{fmt.Sprintf("<form at %p>", &o)}
+		}},
+	}
 }
 
 func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *Env) CallableObject {

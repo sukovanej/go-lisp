@@ -1,4 +1,8 @@
 (defn milan (x) (if (!= x 0)
     ((fn () (println "milan je dement") (milan (- x 1))))))
 
-(milan 100)
+(set x (fn (x) (+ x 1)))
+(defn y (x) (+ x 2))
+
+(println (x 1))
+(print (y 1))

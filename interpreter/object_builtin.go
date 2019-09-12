@@ -1,6 +1,8 @@
 package interpreter
 
+import "bufio"
 import "fmt"
+import "os"
 
 func OperatorFunc(operatorName string) func([]Object, *Env) Object {
 	return func(args []Object, env *Env) Object {
@@ -158,7 +160,11 @@ func SlotCallable(slotName string, numberOfArguments int) func([]Object, *Env) O
 }
 
 func ImportCallable(args []Object, env *Env) Object {
-	panic("not implemented")
+	f, err := os.Open(args[0].(StringObject).String)
+	if err != nil {
+		panic(err)
+	}
+	return Eval(bufio.NewReader(f), env)
 }
 
 func DictCallable(args []Object, env *Env) Object {
@@ -177,8 +183,21 @@ func DictCallable(args []Object, env *Env) Object {
 func GetStr(obj Object, env *Env) StringObject {
 	operatorFunc, ok := GetSlot(obj, "__str__")
 	if !ok {
-		panic("__str__ slot not found.")
+		panic(fmt.Sprintf("__str__ slot not found on %s.", obj))
 	}
 	operatorCallable := operatorFunc.(CallableObject).Callable
 	return operatorCallable([]Object{obj}, env).(StringObject)
+}
+
+func EnvCallable(args []Object, env *Env) Object {
+	envDictObject := DictCallable([]Object{}, env)
+
+	for symbol, object := range env.Objects {
+		envDictObject.(DictObject).Set(StringObject{symbol}, object, env)
+	}
+	return envDictObject
+}
+
+func ListCallable(args []Object, env *Env) Object {
+	return ListObject{args}
 }
