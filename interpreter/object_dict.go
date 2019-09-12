@@ -2,30 +2,48 @@ package interpreter
 
 // Dict object
 
+type DictObjectEntry struct {
+	HashKey string
+	Key     Object
+	Value   Object
+	Next    *DictObjectEntry
+}
+
 type DictObject struct {
-	dict map[string]Object
+	// TODO: implement hashtable
+	Dict []*DictObjectEntry
+}
+
+func (d DictObject) Len() int {
+	result := 0
+	entry := d.Dict[0]
+	for entry != nil {
+		result++
+		entry = entry.Next
+	}
+	return result
 }
 
 func (d DictObject) Get(key Object, env *Env) Object {
 	hash := GetHash(key, env)
-	obj, ok = d.dict[hash]
+	entry := d.Dict[0]
 
-	if !ok {
-		panic("Item not found")
+	for entry != nil {
+		if hash == entry.HashKey {
+			return entry.Value
+		}
+
+		entry = entry.Next
 	}
 
-	return obj
+	return nil
 }
 
 func (d DictObject) Set(key Object, value Object, env *Env) Object {
-	nilObject := env.GetEnvSymbol("#nil")
+	nilObject, _ := env.GetEnvSymbol("#nil")
 	hash := GetHash(key, env)
-	d.dict[hash] = value
-
-	if !ok {
-		panic("Item not found")
-	}
-
+	first := d.Dict[0]
+	d.Dict[0] = &DictObjectEntry{hash, key, value, first}
 	return nilObject
 }
 
@@ -38,12 +56,12 @@ func GetHash(obj Object, env *Env) string {
 
 	switch hashObject.(type) {
 	case StringObject:
-		return hashObject.(StringObject).Value
+		return hashObject.(StringObject).String
 	case CallableObject:
 		hashObject = hashObject.(CallableObject).Callable([]Object{obj}, env)
 		switch hashObject.(type) {
 		case StringObject:
-			return hashObject.(StringObject).Value
+			return hashObject.(StringObject).String
 		}
 	}
 
@@ -57,16 +75,67 @@ func equalDicts(args []Object, env *Env) Object {
 	case DictObject:
 		second := args[1].(DictObject)
 
-		return BoolObject{first.String == second.String}
-	default:
-		return BoolObject{false}
+		if first.Len() != second.Len() {
+			return BoolObject{false}
+		}
+
+		firstEntry := first.Dict[0]
+		for firstEntry != nil {
+			secondEntry := second.Get(firstEntry.Key, env)
+
+			if secondEntry == nil || !Equal(firstEntry.Value, secondEntry, env).Value {
+				return BoolObject{false}
+			}
+
+			firstEntry = firstEntry.Next
+		}
 	}
+	return BoolObject{true}
+}
+
+func getDict(args []Object, env *Env) Object {
+	dictObject := args[0].(DictObject)
+	keyObject := args[1]
+
+	return dictObject.Get(keyObject, env)
+}
+
+func setDict(args []Object, env *Env) Object {
+	dictObject := args[0].(DictObject)
+	keyObject := args[1]
+	valueObject := args[2]
+
+	return dictObject.Set(keyObject, valueObject, env)
+}
+
+func lenDict(args []Object, env *Env) Object {
+	dictObject := args[0].(DictObject)
+
+	return NumberObject{dictObject.Len()}
+}
+
+func strDict(args []Object, env *Env) Object {
+	dictObject := args[0].(DictObject)
+	result := "{"
+	entry := dictObject.Dict[0]
+	for entry != nil {
+		result += GetStr(entry.Key, env).String + ": " + GetStr(entry.Value, env).String
+		entry = entry.Next
+
+		if entry != nil {
+			result += ", "
+		}
+	}
+	result += "}"
+	return StringObject{result}
 }
 
 func (o DictObject) GetSlots() map[string]Object {
 	return map[string]Object{
-		"__get__": CallableObject{addStrings},
-		"__set__": CallableObject{equalStrings},
-		"__==__":  CallableObject{equalDicts},
+		"__item__":     CallableObject{getDict},
+		"__len__":      CallableObject{lenDict},
+		"__set-item__": CallableObject{setDict},
+		"__==__":       CallableObject{equalDicts},
+		"__str__":      CallableObject{strDict},
 	}
 }

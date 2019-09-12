@@ -95,8 +95,11 @@ func GetMainEnv() *Env {
 			"set->":     FormObject{SetAttrForm},
 			"struct":    FormObject{CreateStructForm},
 			"defn":      FormObject{DefLambdaForm},
-			"str":       CallableObject{StrCallable},
+			"str":       CallableObject{SlotCallable("__str__", 1)},
 			"defstruct": FormObject{DefStructForm},
+			"dict":      CallableObject{DictCallable},
+			"item":      CallableObject{SlotCallable("__item__", 2)},
+			"set-item":  CallableObject{SlotCallable("__set-item__", 3)},
 		},
 		nil,
 	}

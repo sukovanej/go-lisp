@@ -28,8 +28,9 @@ func equalStrings(args []Object, env *Env) Object {
 
 func (o StringObject) GetSlots() map[string]Object {
 	return map[string]Object{
-		"__+__":  CallableObject{addStrings},
-		"__==__": CallableObject{equalStrings},
+		"__+__":    CallableObject{addStrings},
+		"__==__":   CallableObject{equalStrings},
+		"__hash__": StringObject{"__str__" + o.String},
 		"__str__": CallableObject{func(_ []Object, _ *Env) Object {
 			return o
 		}},

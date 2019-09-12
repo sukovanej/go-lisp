@@ -1,0 +1,9 @@
+(set my-dict (dict))
+(set-item my-dict "key" "value")
+(!assert (item my-dict "key") "value")
+
+(set my-dict-2 (dict "key" "value" "another-key" 42))
+(!assert (item my-dict-2 "key") "value")
+(!assert (item my-dict-2 "another-key") 42)
+
+(println my-dict-2)

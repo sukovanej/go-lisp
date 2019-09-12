@@ -17,6 +17,15 @@ func OperatorFunc(operatorName string) func([]Object, *Env) Object {
 	}
 }
 
+func Equal(left Object, right Object, env *Env) BoolObject {
+	operatorFunc, ok := GetSlot(left, "__==__")
+	if !ok {
+		panic("__==__ slot not found.")
+	}
+	operatorCallable := operatorFunc.(CallableObject).Callable
+	return operatorCallable([]Object{left, right}, env).(BoolObject)
+}
+
 func SetForm(args []SyntaxValue, env *Env) Object {
 	if len(args) != 2 {
 		panic("Wrong number of arguments")
@@ -134,14 +143,42 @@ func NotEqualOperator(args []Object, env *Env) Object {
 	return BoolObject{!result.Value}
 }
 
-func StrCallable(args []Object, env *Env) Object {
-	operatorFunc, ok := GetSlot(args[0], "__str__")
+func SlotCallable(slotName string, numberOfArguments int) func([]Object, *Env) Object {
+	return func(args []Object, env *Env) Object {
+		if len(args) != numberOfArguments {
+			panic(fmt.Sprintf("Expected %d arguments, %d given.", numberOfArguments, len(args)))
+		}
+		operatorFunc, ok := GetSlot(args[0], slotName)
+		if !ok {
+			panic(fmt.Sprintf("%s slot not found.", slotName))
+		}
+		operatorCallable := operatorFunc.(CallableObject).Callable
+		return operatorCallable(args, env)
+	}
+}
+
+func ImportCallable(args []Object, env *Env) Object {
+	panic("not implemented")
+}
+
+func DictCallable(args []Object, env *Env) Object {
+	dictObject := DictObject{[]*DictObjectEntry{nil}}
+	if len(args)%2 != 0 {
+		panic("Expecetd key-value pairs are arguments")
+	}
+
+	for i := 0; i < len(args); i += 2 {
+		dictObject.Set(args[i], args[i+1], env)
+	}
+
+	return dictObject
+}
+
+func GetStr(obj Object, env *Env) StringObject {
+	operatorFunc, ok := GetSlot(obj, "__str__")
 	if !ok {
 		panic("__str__ slot not found.")
 	}
 	operatorCallable := operatorFunc.(CallableObject).Callable
-	return operatorCallable(args, env)
-}
-
-func ImportCallable(args []Object, env *Env) Object {
+	return operatorCallable([]Object{obj}, env).(StringObject)
 }
