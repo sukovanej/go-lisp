@@ -20,12 +20,29 @@ type Token struct {
 	Type   TokenType
 }
 
-func GetToken(reader *bufio.Reader) Token {
-	r, _, err := reader.ReadRune()
+func skipComments(r rune, err error, reader *bufio.Reader) (rune, error) {
+	// skip comments
+	if r == ';' {
+		for r != '\n' && err != io.EOF {
+			r, _, err = reader.ReadRune()
+		}
+	}
+	return r, err
+}
 
+func skipWhitespaces(r rune, err error, reader *bufio.Reader) (rune, error) {
 	for r == ' ' || r == '\n' || r == '\t' {
 		r, _, err = reader.ReadRune()
 	}
+	return r, err
+}
+
+func GetToken(reader *bufio.Reader) Token {
+	r, _, err := reader.ReadRune()
+
+	r, err = skipWhitespaces(r, err, reader)
+	r, err = skipComments(r, err, reader)
+	r, err = skipWhitespaces(r, err, reader)
 
 	if r == '(' {
 		return Token{string(r), TOKEN_LPAR}

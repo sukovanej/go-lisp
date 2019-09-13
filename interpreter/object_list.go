@@ -51,9 +51,7 @@ func setList(args []Object, env *Env) Object {
 
 func appendList(args []Object, env *Env) Object {
 	listObject := args[0].(ListObject)
-	listObject.List = append(listObject.List, args[1])
-	nilObject, _ := env.GetEnvSymbol("#nil")
-	return nilObject
+	return ListObject{append(listObject.List, args[1])}
 }
 
 func lenList(args []Object, env *Env) Object {
