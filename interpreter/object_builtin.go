@@ -103,7 +103,7 @@ func DefStructForm(declared_args []SyntaxValue, env *Env) Object {
 		structObject := CreateStructForm(declared_args[1:], env)
 		structSlots := structObject.GetSlots()
 		for i, _ := range declared_args[1:] {
-			structSlots[declared_args[i].(Token).Symbol] = args[i]
+			structSlots[declared_args[i+1].(Token).Symbol] = args[i]
 		}
 		return structObject
 	}}

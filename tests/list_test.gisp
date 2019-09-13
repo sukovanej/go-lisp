@@ -3,6 +3,6 @@
 (defn append (l item) ((-> l append) l item))
 
 (set my-list (append my-list 1))
-(set my-list (append my-list 2)) ; apend and set
+(set my-list (append my-list 2)) ; append and set
 
 (!assert my-list (list 1 2))

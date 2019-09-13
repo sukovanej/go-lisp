@@ -18,4 +18,4 @@
 (set main-page (Page "Title" "Subtitle" "Page content."))
 (set-> main-page __str__ page-str)
 
-(print main-page)
+(!assert (str main-page) "Page: Title, Subtitle - Page content.")
