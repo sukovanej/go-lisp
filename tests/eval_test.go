@@ -135,8 +135,8 @@ func TestEvalFactorial(t *testing.T) {
 }
 
 func TestCustomTests(t *testing.T) {
-	env := GetMainEnv()
 	matches, err := filepath.Glob("./*.gisp")
+	env := SetupMainEnv()
 
 	if err != nil {
 		panic(err)

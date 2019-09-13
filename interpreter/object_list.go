@@ -59,6 +59,12 @@ func lenList(args []Object, env *Env) Object {
 	return NumberObject{len(listObject.List)}
 }
 
+func plusList(args []Object, env *Env) Object {
+	listObjectLeft := args[0].(ListObject)
+	listObjectRight := args[1].(ListObject)
+	return ListObject{append(listObjectLeft.List, listObjectRight.List...)}
+}
+
 func strList(args []Object, env *Env) Object {
 	listObject := args[0].(ListObject)
 	l := len(listObject.List)
@@ -81,6 +87,7 @@ func (o ListObject) GetSlots() map[string]Object {
 		"__set-item__": CallableObject{setList},
 		"__==__":       CallableObject{equalLists},
 		"__str__":      CallableObject{strList},
+		"__+__":        CallableObject{plusList},
 		"append":       CallableObject{appendList},
 	}
 }

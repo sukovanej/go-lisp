@@ -1,0 +1,63 @@
+; STD library for gisp
+
+; ========================================
+; LIST
+; ========================================
+
+(defn append (l item)
+    ; append
+    ; take original item and create an new one with added item
+    ; >> (set l (list 1 2 3 4))
+    ; >> (append l 5)
+    ; >> [1, 2, 3, 4, 5]
+    ((-> l append) l item))
+
+
+(defn prepend (l item)
+    ; prepend
+    ; take original item and create an new one with the item as a first item
+    ; >> (set l (list 1 2 3 4))
+    ; >> (prepend l 5)
+    ; >> [5, 1, 2, 3, 45]
+    (+ (list item) l))
+
+
+(defn first (l)
+    ; get the first item of the list
+    ; >> (first (list 1 2 3))
+    ; 1
+    (item l 0))
+
+
+(defn last (l)
+    ; get the last item of the list
+    ; >> (last (list 1 2 3))
+    ; 3
+    (item l (- (len l) 1)))
+
+
+(defn tail (l)
+    ; get the tail of the list
+    ; >> (last (list 1 2 3))
+    ; [2, 3]
+    (if (== (len l) 0)
+        l
+        (slice l 1 (len l))))
+
+(defn head (l)
+    ; get the head of the list
+    ; >> (head (list 1 2 3))
+    ; [1, 2]
+    (if (== (len l) 0)
+        l
+        (slice l 0 (- (len l) 1))))
+
+
+(defn map (p l)
+    ; map the list
+    ; >> (set l (list 1 2 3 4))
+    ; >> (map l (fn (x) (* x x)))
+    ; [1, 4, 9, 16]
+    (if (== (len l) 1)
+        (list (p (first l)))
+        (+ (list (p (first l))) (map p (tail l)))))

@@ -1,0 +1,38 @@
+; test append, prepend
+(set list-1 (list 1))
+(set list-2 (append list-1 2))
+(set list-3 (prepend list-1 2))
+
+(!assert (list 1) list-1)
+(!assert (list 1 2) list-2)
+(!assert (list 2 1) list-3)
+
+; test first function
+
+(!assert (first list-1) 1)
+(!assert (first list-2) 1)
+(!assert (first list-3) 2)
+
+; test last function
+
+(!assert (last list-1) 1)
+(!assert (last list-2) 2)
+(!assert (last list-3) 1)
+
+; test tail function
+
+(!assert (tail (list)) (list))
+(!assert (tail (list 1)) (list))
+(!assert (tail (list 1 2)) (list 2))
+(!assert (tail (list 1 2 3 4 5)) (list 2 3 4 5))
+
+; test head function
+
+(!assert (head (list)) (list))
+(!assert (head (list 1)) (list))
+(!assert (head (list 1 2)) (list 1))
+(!assert (head (list 1 2 3 4 5)) (list 1 2 3 4))
+
+(defn predicate (x) (* x x))
+
+(!assert (map predicate (list 1 2 3 4)) (list 1 4 9 16))

@@ -10,14 +10,14 @@ import (
 
 func main() {
 	if len(os.Args) == 1 {
-		env := GetMainEnv()
+		env := SetupMainEnv()
 		runRepl(env)
 	} else if len(os.Args) == 2 {
-		env := GetMainEnv()
+		env := SetupMainEnv()
 		EvalFile(os.Args[1], env)
 	} else if len(os.Args) == 3 {
 		if os.Args[1] == "-i" {
-			env := GetMainEnv()
+			env := SetupMainEnv()
 			EvalFile(os.Args[2], env)
 			runRepl(env)
 		}

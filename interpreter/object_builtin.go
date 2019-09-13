@@ -160,11 +160,24 @@ func SlotCallable(slotName string, numberOfArguments int) func([]Object, *Env) O
 }
 
 func ImportCallable(args []Object, env *Env) Object {
-	f, err := os.Open(args[0].(StringObject).String)
-	if err != nil {
-		panic(err)
+	importFileString := args[0].(StringObject).String
+	importPathObject, ok := env.GetEnvSymbol("__import_path__")
+
+	if !ok {
+		panic("__import_path__ not found")
 	}
-	return Eval(bufio.NewReader(f), env)
+
+	for _, pathObject := range importPathObject.(ListObject).List {
+		fileName := pathObject.(StringObject).String + "/" + importFileString + ".gisp"
+		if _, err := os.Stat(fileName); !os.IsNotExist(err) {
+			f, err := os.Open(fileName)
+			if err != nil {
+				panic(err)
+			}
+			return Eval(bufio.NewReader(f), env)
+		}
+	}
+	panic(fmt.Sprintf("Dependency %s not found", importFileString))
 }
 
 func DictCallable(args []Object, env *Env) Object {
@@ -200,4 +213,11 @@ func EnvCallable(args []Object, env *Env) Object {
 
 func ListCallable(args []Object, env *Env) Object {
 	return ListObject{args}
+}
+
+func SliceCallable(args []Object, env *Env) Object {
+	start := args[1].(NumberObject).Integer
+	end := args[2].(NumberObject).Integer
+
+	return ListObject{args[0].(ListObject).List[start:end]}
 }

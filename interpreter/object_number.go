@@ -48,6 +48,12 @@ func equalNumbers(args []Object, env *Env) Object {
 	}
 }
 
+func compareNumbers(args []Object, env *Env) Object {
+	first := args[0].(NumberObject)
+	second := args[1].(NumberObject)
+	return BoolObject{first.Integer < second.Integer}
+}
+
 func strNumbers(args []Object, _ *Env) Object {
 	value := args[0].(NumberObject)
 
@@ -57,6 +63,7 @@ func strNumbers(args []Object, _ *Env) Object {
 func (n NumberObject) GetSlots() map[string]Object {
 	return map[string]Object{
 		"__+__":   CallableObject{addNumbers},
+		"__<__":   CallableObject{compareNumbers},
 		"__-__":   CallableObject{subtractNumbers},
 		"__*__":   CallableObject{multiplyNumbers},
 		"__/__":   CallableObject{divideNumbers},

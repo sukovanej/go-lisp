@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -13,6 +14,25 @@ func EvalFile(file string, env *Env) Object {
 		panic(err)
 	}
 	return Eval(bufio.NewReader(f), env)
+}
+
+func SetupMainEnv() *Env {
+	env := GetMainEnv()
+	systemPath, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		panic(err)
+	}
+	pwdPath, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	env.SetSymbol("__import_path__", ListObject{[]Object{
+		StringObject{systemPath + "/std"},
+		StringObject{pwdPath},
+	}})
+	ImportCallable([]Object{StringObject{"builtin"}}, env)
+	return env
 }
 
 func Eval(reader *bufio.Reader, env *Env) Object {
@@ -103,8 +123,10 @@ func GetMainEnv() *Env {
 			"env":       CallableObject{EnvCallable},
 			"import":    CallableObject{ImportCallable},
 			"list":      CallableObject{ListCallable},
+			"len":       CallableObject{SlotCallable("__len__", 1)},
+			"<":         CallableObject{SlotCallable("__<__", 2)},
+			"slice":     CallableObject{SliceCallable},
 		},
 		nil,
 	}
-
 }
