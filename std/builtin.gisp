@@ -2,6 +2,10 @@
 
 
 (defn ? (callable args...)
+    ; partial application of function
+    ; >> (set add-2 (? + 2)
+    ; >> (add-2 1)
+    ; 3
     (fn (rem-args...) (apply callable (+ args rem-args))))
 
 

@@ -1,4 +1,4 @@
+#!/usr/local/bin/gisp
 (import "string")
-
-(set second-line (? map (fn (line) (item 1 line))))
-(println ((. (? join " ") second-line tail columnize @sh) "docker ps"))
+(set second-column (? map (fn (line) (item 1 line))))
+(println ((. (? join " ") second-column tail columnize @sh) "docker ps"))
