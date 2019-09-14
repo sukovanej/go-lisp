@@ -1,6 +1,10 @@
 ; STD library for gisp
 
 
+(defn ? (callable args...)
+    (fn (rem-args...) (apply callable (+ args rem-args))))
+
+
 (defn . (fns...)
     ; compose function
     ; when applied as ((. f1 f2 f3 f4) args) it behaves as (f4 (f3 (f2 (f1 args))))

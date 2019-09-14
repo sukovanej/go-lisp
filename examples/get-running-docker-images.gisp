@@ -1,9 +1,6 @@
 (import "string")
 
 (defn take-second-column (lines)
-    (map (fn (line) (item line 1)) lines))
+    (map (fn (line) (item 1 line)) lines))
 
-(defn join-with-space (line)
-    (join " " line))
-
-(println ((. join-with-space take-second-column tail columnize @sh) "docker ps"))
+(println ((. (? join " ") take-second-column tail columnize @sh) "docker ps"))
