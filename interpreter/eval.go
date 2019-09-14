@@ -54,12 +54,20 @@ func EvalSyntax(value SyntaxValue, env *Env) Object {
 	case SYNTAX_LIST:
 		return evalFunction(value.(ListValue).Value, env)
 	case SYNTAX_LIST_LITERAL:
-		return evalFunction(append([]SyntaxValue{SymbolValue{Token{"list", SYMBOL}}}, value.(ListLiteralValue).Value...), env)
+		return evalListLiteral(value.(ListLiteralValue), env)
 	case SYNTAX_DICT_LITERAL:
 		return evalFunction(append([]SyntaxValue{SymbolValue{Token{"dict", SYMBOL}}}, value.(DictLiteralValue).Value...), env)
 	}
 
 	panic("Unexpected syntax token.")
+}
+
+func evalListLiteral(args ListLiteralValue, env *Env) Object {
+	argObjects := []Object{}
+	for _, value := range args.Value {
+		argObjects = append(argObjects, EvalSyntax(value, env))
+	}
+	return ListCallable(argObjects, env)
 }
 
 func evalSymbol(token Token, env *Env) Object {
@@ -130,6 +138,7 @@ func GetMainEnv() *Env {
 			"len":       CallableObject{SlotCallable("__len__", 1)},
 			"<":         CallableObject{SlotCallable("__<__", 2)},
 			"slice":     CallableObject{SlotCallable("__slice__", 3)},
+			"append":    CallableObject{SlotCallable("__append__", 2)},
 		},
 		nil,
 	}

@@ -119,7 +119,7 @@ func GetAttrForm(args []SyntaxValue, env *Env) Object {
 	obj := EvalSyntax(args[0], env)
 	slot, ok := GetSlot(obj, args[1].(SymbolValue).Value.Symbol)
 	if !ok {
-		panic("Slot not found")
+		panic(fmt.Sprintf("Slot %s not found", args[1].(SymbolValue).Value.Symbol))
 	}
 	return slot
 }

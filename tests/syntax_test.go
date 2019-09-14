@@ -274,6 +274,16 @@ func TestSyntaxList(t *testing.T) {
 	if !compareSyntax(expectedSyntax, outputSyntax) {
 		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
 	}
+
+	inputSyntax = bufio.NewReader(strings.NewReader(`[]`))
+
+	expectedSyntax = ListLiteralValue{
+		[]SyntaxValue{},
+	}
+	outputSyntax = GetSyntax(inputSyntax)
+	if !compareSyntax(expectedSyntax, outputSyntax) {
+		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
+	}
 }
 
 func TestSyntaxDict(t *testing.T) {

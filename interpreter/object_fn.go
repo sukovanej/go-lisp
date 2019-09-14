@@ -18,6 +18,9 @@ func (o FormObject) GetSlots() map[string]Object {
 func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *Env) CallableObject {
 	return CallableObject{func(args []Object, _ *Env) Object {
 		internal_env := &Env{map[string]Object{}, env}
+		if len(declared_args) != len(args) {
+			panic("wrong number of arguments")
+		}
 		for i, declared_arg := range declared_args {
 			switch declared_arg.GetType() {
 			case SYNTAX_SYMBOL:

@@ -5,3 +5,6 @@
 (!assert (last "hello") "o")
 (!assert (tail "hello") "ello")
 (!assert (head "hello") "hell")
+(!assert (tail "h") "")
+(!assert (words "h") ["h"])
+(!assert (words "hello world man") ["hello" "world" "man"])

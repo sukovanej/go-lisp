@@ -4,14 +4,6 @@
 ; LIST
 ; ========================================
 
-(defn append (l item)
-    ; append
-    ; take original item and create an new one with added item
-    ; >> (set l (list 1 2 3 4))
-    ; >> (append l 5)
-    ; >> [1, 2, 3, 4, 5]
-    ((-> l append) l item))
-
 
 (defn prepend (l item)
     ; prepend
@@ -61,3 +53,23 @@
     (if (== (len l) 1)
         (list (p (first l)))
         (+ (list (p (first l))) (map p (tail l)))))
+
+
+; ========================================
+; STRING
+; ========================================
+
+
+(defn words (str)
+    ; split the string by words
+    ; >> (words "hello world")
+    ; ["hello" "world"]
+    (defn _words (str current result)
+        (if (== str "")
+            (append result current)
+            (if (== (first str) " ")
+                (if (== current "")
+                    (_words (tail str) "" result)
+                    (_words (tail str) "" (append result current)))
+                (_words (tail str) (+ current (first str)) result))))
+    (_words str "" []))

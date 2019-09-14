@@ -1,7 +1,4 @@
 (set my-list (list))
-
-(defn append (l item) ((-> l append) l item))
-
 (set my-list (append my-list 1))
 (set my-list (append my-list 2)) ; append and set
 
@@ -9,3 +6,5 @@
 
 (set another-list [1 2 3])
 (!assert another-list (list 1 2 3))
+
+(!assert [] (list))
