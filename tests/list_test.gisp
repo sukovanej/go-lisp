@@ -8,3 +8,6 @@
 (!assert another-list (list 1 2 3))
 
 (!assert [] (list))
+
+(!assert (one-of 1 [1 2]) #t)
+(!assert (one-of 2 [1 3]) #f)

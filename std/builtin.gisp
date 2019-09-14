@@ -1,8 +1,22 @@
 ; STD library for gisp
 
-; ========================================
-; LIST
-; ========================================
+
+(defn one-of (i l)
+    ; is item `i` part of list `l`
+    ; >> (one-of 1 [1 2 3])
+    ; #t
+    ; >> (one-of "h" "hello world")
+    ; #t
+    (if (empty l)
+        #f
+        (if (== i (first l))
+            #t
+            (one-of i (tail l)))))
+
+
+(defn empty (l)
+    ; is the list empty
+    (== (len l) 0))
 
 
 (defn prepend (l item)
@@ -53,11 +67,6 @@
     (if (== (len l) 1)
         (list (p (first l)))
         (+ (list (p (first l))) (map p (tail l)))))
-
-
-; ========================================
-; STRING
-; ========================================
 
 
 (defn words (str)

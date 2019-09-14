@@ -8,7 +8,7 @@ func OperatorFunc(operatorName string) func([]Object, *Env) Object {
 	return func(args []Object, env *Env) Object {
 		operatorFunc, ok := GetSlot(args[0], "__"+operatorName+"__")
 		if !ok {
-			panic("Operator slot not found.")
+			panic(fmt.Sprintf("Operator %s slot not found on %v.", operatorName, args[0]))
 		}
 		operatorCallable := operatorFunc.(CallableObject).Callable
 		result := args[0]

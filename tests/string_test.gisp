@@ -8,3 +8,5 @@
 (!assert (tail "h") "")
 (!assert (words "h") ["h"])
 (!assert (words "hello world man") ["hello" "world" "man"])
+(!assert (one-of "h" "hello world") #t)
+(!assert (one-of "a" "hello world") #f)
