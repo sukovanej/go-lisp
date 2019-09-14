@@ -21,6 +21,7 @@ TODO:
 ```
 
  - [ ] error handling
+ - [ ] syntax error handling
  - [x] comments
  - [x] list syntax
 
