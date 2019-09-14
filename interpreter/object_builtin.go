@@ -168,7 +168,7 @@ func SlotCallable(slotName string, numberOfArguments int) func([]Object, *Env) O
 		if len(args) != numberOfArguments {
 			return NewErrorWithoutToken(fmt.Sprintf("Callable expects %d arguments, %d was given.", numberOfArguments, len(args)))
 		}
-		operatorFunc, ok := GetSlot(args[0], slotName)
+		operatorFunc, ok := GetSlot(args[len(args)-1], slotName)
 		if !ok {
 			return NewErrorWithoutToken(fmt.Sprintf("%s slot not found.", slotName))
 		}

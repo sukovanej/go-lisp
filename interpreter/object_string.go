@@ -18,41 +18,60 @@ func IsStringObject(obj Object) bool {
 }
 
 func addStrings(args []Object, env *Env) Object {
-	first := args[0].(StringObject)
-	second := args[1].(StringObject)
+	if !IsStringObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be string."))
+	} else if !IsStringObject(args[1]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be string."))
+	}
+	first := args[0].(StringObject).String
+	second := args[1].(StringObject).String
 
-	return StringObject{first.String + second.String}
+	return StringObject{first + second}
 }
 
 func equalStrings(args []Object, env *Env) Object {
-	first := args[0].(StringObject)
-
-	switch args[1].(type) {
-	case StringObject:
-		second := args[1].(StringObject)
-
-		return BoolObject{first.String == second.String}
-	default:
-		return BoolObject{false}
+	if !IsStringObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be string."))
+	} else if !IsStringObject(args[1]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be string."))
 	}
+
+	first := args[0].(StringObject).String
+	second := args[1].(StringObject).String
+
+	return BoolObject{first == second}
 }
 
 func itemStrings(args []Object, env *Env) Object {
-	first := args[0].(StringObject).String
-	i := args[1].(NumberObject).Integer
+	if !IsNumberObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be number."))
+	} else if !IsStringObject(args[1]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be string."))
+	}
 
-	if len(first) <= i {
+	index := args[0].(NumberObject).Integer
+	first := args[1].(StringObject).String
+
+	if len(first) <= index {
 		iStringObject := GetStr(args[1], env)
 		return NewErrorWithoutToken(fmt.Sprintf("Index %s is out of range.", iStringObject.(StringObject).String))
 	}
 
-	return StringObject{string(first[i])}
+	return StringObject{string(first[index])}
 }
 
 func sliceString(args []Object, env *Env) Object {
-	str := args[0].(StringObject).String
-	start := args[1].(NumberObject).Integer
-	end := args[2].(NumberObject).Integer
+	if !IsNumberObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be number."))
+	} else if !IsNumberObject(args[1]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be number."))
+	} else if !IsStringObject(args[2]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be string."))
+	}
+
+	start := args[0].(NumberObject).Integer
+	end := args[1].(NumberObject).Integer
+	str := args[2].(StringObject).String
 
 	return StringObject{str[start:end]}
 }
@@ -63,14 +82,22 @@ func lenString(args []Object, env *Env) Object {
 	return NumberObject{len(str)}
 }
 
+func appendString(args []Object, env *Env) Object {
+	first := args[0].(StringObject).String
+	second := args[1].(StringObject).String
+
+	return StringObject{second + first}
+}
+
 func (o StringObject) GetSlots() map[string]Object {
 	return map[string]Object{
-		"__+__":     CallableObject{addStrings},
-		"__==__":    CallableObject{equalStrings},
-		"__hash__":  StringObject{"__str__" + o.String},
-		"__item__":  CallableObject{itemStrings},
-		"__slice__": CallableObject{sliceString},
-		"__len__":   CallableObject{lenString},
+		"__+__":      CallableObject{addStrings},
+		"__==__":     CallableObject{equalStrings},
+		"__hash__":   StringObject{"__str__" + o.String},
+		"__item__":   CallableObject{itemStrings},
+		"__slice__":  CallableObject{sliceString},
+		"__append__": CallableObject{appendString},
+		"__len__":    CallableObject{lenString},
 		"__str__": CallableObject{func(_ []Object, _ *Env) Object {
 			return o
 		}},

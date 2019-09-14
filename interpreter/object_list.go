@@ -2,6 +2,8 @@ package interpreter
 
 // List object
 
+import "fmt"
+
 type ListObject struct {
 	// TODO: implement hashtable
 	List []Object
@@ -46,14 +48,20 @@ func equalLists(args []Object, env *Env) Object {
 }
 
 func getList(args []Object, env *Env) Object {
-	listObject := args[0].(ListObject)
-	indexObject := args[1].(NumberObject)
-
-	if len(listObject.List) < indexObject.Integer {
-		panic("Index out of range.")
+	if !IsNumberObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be number."))
+	} else if !IsListObject(args[1]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be list."))
 	}
 
-	return listObject.List[indexObject.Integer]
+	index := args[0].(NumberObject).Integer
+	list := args[1].(ListObject).List
+
+	if len(list) < index {
+		return NewErrorWithoutToken(fmt.Sprintf("Index out of range."))
+	}
+
+	return list[index]
 }
 
 func setList(args []Object, env *Env) Object {
@@ -64,13 +72,18 @@ func setList(args []Object, env *Env) Object {
 }
 
 func appendList(args []Object, env *Env) Object {
-	listObject := args[0].(ListObject)
-	return ListObject{append(listObject.List, args[1])}
+	if !IsListObject(args[1]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be list."))
+	}
+	return ListObject{append(args[1].(ListObject).List, args[0])}
 }
 
 func lenList(args []Object, env *Env) Object {
-	listObject := args[0].(ListObject)
-	return NumberObject{len(listObject.List)}
+	if !IsListObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be list."))
+	}
+	list := args[0].(ListObject).List
+	return NumberObject{len(list)}
 }
 
 func plusList(args []Object, env *Env) Object {
@@ -99,10 +112,19 @@ func strList(args []Object, env *Env) Object {
 }
 
 func sliceList(args []Object, env *Env) Object {
-	start := args[1].(NumberObject).Integer
-	end := args[2].(NumberObject).Integer
+	if !IsNumberObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be number."))
+	} else if !IsNumberObject(args[1]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be number."))
+	} else if !IsListObject(args[2]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be list."))
+	}
 
-	return ListObject{args[0].(ListObject).List[start:end]}
+	list := args[2].(ListObject).List
+	left := args[0].(NumberObject).Integer
+	right := args[1].(NumberObject).Integer
+
+	return ListObject{list[left:right]}
 }
 
 func (o ListObject) GetSlots() map[string]Object {

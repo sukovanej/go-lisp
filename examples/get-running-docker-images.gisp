@@ -4,6 +4,6 @@
     (map (fn (line) (item line 1)) lines))
 
 (defn join-with-space (line)
-    (join line " "))
+    (join " " line))
 
 (println ((. join-with-space take-second-column tail columnize @sh) "docker ps"))

@@ -4,6 +4,15 @@ import "strconv"
 
 // Number object
 
+func IsNumberObject(obj Object) bool {
+	switch obj.(type) {
+	case NumberObject:
+		return true
+	default:
+		return false
+	}
+}
+
 type NumberObject struct {
 	Integer int
 }

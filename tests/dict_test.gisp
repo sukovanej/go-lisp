@@ -1,10 +1,10 @@
 (set my-dict (dict))
-(set-item my-dict "key" "value")
-(!assert (item my-dict "key") "value")
+(set-item "key" "value" my-dict)
+(!assert (item "key" my-dict) "value")
 
 (set my-dict-2 (dict "key" "value" "another-key" 42))
-(!assert (item my-dict-2 "key") "value")
-(!assert (item my-dict-2 "another-key") 42)
+(!assert (item "key" my-dict-2) "value")
+(!assert (item "another-key" my-dict-2) 42)
 
 (set another-list {"key" "value" "another" "another"})
 (!assert another-list (dict "key" "value" "another" "another"))

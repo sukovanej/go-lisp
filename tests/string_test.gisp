@@ -1,16 +1,21 @@
 (!assert (+ "hello," " world") "hello, world")
-(!assert (item "hello" 1) "e")
-(!assert (slice "hello" 1 3) "el")
+
+(!assert (append "o" "hell") "hello")
+
+(!assert (item 1 "hello") "e")
+
+(!assert (slice 1 3 "hello") "el")
+
 (!assert (first "hello") "h")
 (!assert (last "hello") "o")
 (!assert (tail "hello") "ello")
 (!assert (head "hello") "hell")
 (!assert (tail "h") "")
 
-(!assert (split "h" " ") ["h"])
-(!assert (split "" " ") [])
-(!assert (split "hello world man" " ") ["hello" "world" "man"])
-(!assert (split "aabaa" "b") ["aa" "aa"])
+(!assert (split " " "h") ["h"])
+(!assert (split " " "") [])
+(!assert (split " " "hello world man") ["hello" "world" "man"])
+(!assert (split "b" "aabaa") ["aa" "aa"])
 
 (!assert (one-of "h" "hello world") #t)
 (!assert (one-of "a" "hello world") #f)
@@ -24,14 +29,14 @@
 (!assert (lines "h\n") ["h"])
 (!assert (lines "hello\nworld\nman") ["hello" "world" "man"])
 
-(!assert (starts-with "hello" "hello world") #f)
-(!assert (starts-with "hello world" "hello") #t)
-(!assert (starts-with "ahoj" "ah") #t)
-(!assert (starts-with "ahoj" "ha") #f)
+(!assert (starts-with "hello" "hello world") #t)
+(!assert (starts-with "hello world" "hello") #f)
+(!assert (starts-with "ah" "ahoj") #t)
+(!assert (starts-with "ha" "ahoj") #f)
 
 (!assert (is-alpha "123") #t)
 (!assert (is-alpha "12a23") #f)
 (!assert (is-alpha "") #f)
 
 (!assert (columnize "1  2 2   4    3") [["1" "2" "2" "4" "3"]])
-(!assert (join ["hello" "world"] ", ") "hello, world")
+(!assert (join ", " ["hello" "world"]) "hello, world")

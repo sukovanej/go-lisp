@@ -6,14 +6,14 @@
 (set ALPHA-CHARACTERS (map str [1 2 3 4 5 6 7 8 9]))
 
 
-(defn starts-with (str sub-str)
+(defn starts-with (sub-str str)
     ; tests whether the string starts with a given substring
     ; >> (starts-with "hello world" "hell")
     ; #t
     (cond 
         (empty sub-str) #t
         (or (empty str) (!= (first str) (first sub-str))) #f
-        (== (first str) (first sub-str)) (starts-with (tail str) (tail sub-str))))
+        (== (first str) (first sub-str)) (starts-with (tail sub-str) (tail str))))
 
 
 (defn is-alpha (str)
@@ -31,14 +31,14 @@
     ; split the string by words
     ; >> (words "hello world")
     ; ["hello" "world"]
-    (split str " "))
+    (split " " str))
 
 
 (defn lines (str)
     ; split the string by words
     ; >> (lines "hello\nworld")
     ; ["hello" "world"]
-    (split str "\n"))
+    (split "\n" str))
 
 
 (defn columnize (str)

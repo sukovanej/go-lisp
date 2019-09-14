@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	. "github.com/sukovanej/go-lisp/interpreter"
 	"path/filepath"
 	"strings"
@@ -143,7 +144,11 @@ func TestCustomTests(t *testing.T) {
 	}
 
 	for _, file := range matches {
+		fmt.Println("Running", file)
 		fileEnv := &Env{map[string]Object{}, env}
-		EvalFile(file, fileEnv)
+		result := EvalFile(file, fileEnv)
+		if IsErrorObject(result) {
+			t.Errorf("Error in %s", file)
+		}
 	}
 }

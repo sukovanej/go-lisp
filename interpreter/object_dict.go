@@ -4,6 +4,15 @@ package interpreter
 
 import "fmt"
 
+func IsDictObject(obj Object) bool {
+	switch obj.(type) {
+	case DictObject:
+		return true
+	default:
+		return false
+	}
+}
+
 type DictObjectEntry struct {
 	HashKey string
 	Key     Object
@@ -27,7 +36,11 @@ func (d DictObject) Len() int {
 }
 
 func (d DictObject) Get(key Object, env *Env) Object {
-	hash := GetHash(key, env)
+	hashObject := GetHash(key, env)
+	if IsErrorObject(hashObject) {
+		return hashObject
+	}
+	hash := hashObject.(StringObject).String
 	entry := d.Dict[0]
 
 	for entry != nil {
@@ -43,31 +56,33 @@ func (d DictObject) Get(key Object, env *Env) Object {
 
 func (d DictObject) Set(key Object, value Object, env *Env) Object {
 	nilObject, _ := env.GetEnvSymbol("#nil")
-	hash := GetHash(key, env)
+	hashObject := GetHash(key, env)
+	if IsErrorObject(hashObject) {
+		return hashObject
+	}
+	hash := hashObject.(StringObject).String
 	first := d.Dict[0]
 	d.Dict[0] = &DictObjectEntry{hash, key, value, first}
 	return nilObject
 }
 
-func GetHash(obj Object, env *Env) string {
+func GetHash(obj Object, env *Env) Object {
 	hashObject, ok := GetSlot(obj, "__hash__")
 
 	if !ok {
-		NewErrorWithoutToken(fmt.Sprintf(""))
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be hashable."))
 	}
 
-	switch hashObject.(type) {
-	case StringObject:
-		return hashObject.(StringObject).String
-	case CallableObject:
+	if IsStringObject(hashObject) {
+		return hashObject.(StringObject)
+	} else if IsCallableObject(hashObject) {
 		hashObject = hashObject.(CallableObject).Callable([]Object{obj}, env)
-		switch hashObject.(type) {
-		case StringObject:
-			return hashObject.(StringObject).String
+		if IsStringObject(hashObject) {
+			return hashObject.(StringObject)
 		}
 	}
 
-	panic("__hash__ must be str or callable")
+	return NewErrorWithoutToken(fmt.Sprintf("Hash object must be string or callable which return string."))
 }
 
 func equalDicts(args []Object, env *Env) Object {
@@ -103,21 +118,31 @@ func equalDicts(args []Object, env *Env) Object {
 }
 
 func getDict(args []Object, env *Env) Object {
-	dictObject := args[0].(DictObject)
-	keyObject := args[1]
+	if !IsDictObject(args[1]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be dict."))
+	}
+
+	dictObject := args[1].(DictObject)
+	keyObject := args[0]
 
 	return dictObject.Get(keyObject, env)
 }
 
 func setDict(args []Object, env *Env) Object {
-	dictObject := args[0].(DictObject)
-	keyObject := args[1]
-	valueObject := args[2]
+	if !IsDictObject(args[2]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be dict."))
+	}
+	dictObject := args[2].(DictObject)
+	keyObject := args[0]
+	valueObject := args[1]
 
 	return dictObject.Set(keyObject, valueObject, env)
 }
 
 func lenDict(args []Object, env *Env) Object {
+	if !IsDictObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be dict."))
+	}
 	dictObject := args[0].(DictObject)
 
 	return NumberObject{dictObject.Len()}
