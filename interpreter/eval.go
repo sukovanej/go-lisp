@@ -164,6 +164,8 @@ func GetMainEnv() *Env {
 			"append":    CallableObject{SlotCallable("__append__", 2)},
 			"and":       FormObject{AndForm},
 			"or":        FormObject{OrForm},
+			"cond":      FormObject{CondForm},
+			"not":       CallableObject{NotOperator},
 		},
 		nil,
 	}

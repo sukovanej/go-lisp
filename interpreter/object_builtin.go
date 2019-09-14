@@ -160,7 +160,7 @@ func SlotCallable(slotName string, numberOfArguments int) func([]Object, *Env) O
 		}
 		operatorFunc, ok := GetSlot(args[0], slotName)
 		if !ok {
-			panic(fmt.Sprintf("%s slot not found.", slotName))
+			return NewErrorWithoutToken(fmt.Sprintf("%s slot not found.", slotName))
 		}
 		operatorCallable := operatorFunc.(CallableObject).Callable
 		return operatorCallable(args, env)
@@ -242,11 +242,20 @@ func AndForm(args []SyntaxValue, env *Env) Object {
 
 func OrForm(args []SyntaxValue, env *Env) Object {
 	if len(args) == 0 {
-		panic("Wrong number of arguments")
+		return NewErrorWithoutToken(fmt.Sprintf("Callable or expects at least 1 argument, 0 given."))
 	}
 
 	for _, arg := range args {
 		value := EvalSyntax(arg, env)
+
+		if IsErrorObject(value) {
+			return value
+		}
+
+		if !IsBoolObject(value) {
+			return NewErrorWithoutToken(fmt.Sprintf("Object must be bool."))
+		}
+
 		if value.(BoolObject).Value {
 			t, _ := env.GetEnvSymbol("#t")
 			return t
@@ -260,4 +269,15 @@ func OrForm(args []SyntaxValue, env *Env) Object {
 func GreaterOperator(args []Object, env *Env) Object {
 	result := OperatorFunc("<")(args, env).(BoolObject)
 	return BoolObject{!result.Value}
+}
+
+func NotOperator(args []Object, env *Env) Object {
+	if len(args) != 1 {
+		return NewErrorWithoutToken(fmt.Sprintf("Callable not expects 1 argument, %s given.", len(args)))
+	}
+
+	if !IsBoolObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be bool."))
+	}
+	return BoolObject{!args[0].(BoolObject).Value}
 }

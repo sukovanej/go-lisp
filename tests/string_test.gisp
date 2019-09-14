@@ -15,3 +15,5 @@
 
 (!assert (starts-with "hello" "hello world") #f)
 (!assert (starts-with "hello world" "hello") #t)
+(!assert (starts-with "ahoj" "ah") #t)
+(!assert (starts-with "ahoj" "ha") #f)

@@ -1,0 +1,7 @@
+(defn test-fn (x) 
+    (cond 
+        (== x 1) "hello"
+        (== x 2) "world"))
+
+(!assert (test-fn 1) "hello")
+(!assert (test-fn 2) "world")

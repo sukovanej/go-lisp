@@ -10,6 +10,15 @@ func equalBool(args []Object, env *Env) Object {
 	return BoolObject{left == right}
 }
 
+func IsBoolObject(obj Object) bool {
+	switch obj.(type) {
+	case BoolObject:
+		return true
+	default:
+		return false
+	}
+}
+
 func (obj BoolObject) GetSlots() map[string]Object {
 	return map[string]Object{
 		"__==__": CallableObject{equalBool},

@@ -1,0 +1,18 @@
+; ========================================
+; ADVANCED STRING LIBRARY
+; ========================================
+
+(set WHITE-SPACES [" " "\n" "\t"])
+
+(defn starts-with (str sub-str)
+    (cond 
+        (empty sub-str) #t
+        (or (empty str) (!= (first str) (first sub-str))) #f
+        (== (first str) (first sub-str)) (starts-with (tail str) (tail sub-str))))
+
+; (defn replace (str from to)
+;     (+ (if (one-of (first str)
+; 
+; (defn clean-whitespaces (str)
+;     (defn _clean-whitespaces (str prev)
+;         (if (one-of (first str) WHITE_SPACES)
