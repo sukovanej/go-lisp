@@ -6,3 +6,6 @@
 (set my-list (append my-list 2)) ; append and set
 
 (!assert my-list (list 1 2))
+
+(set another-list [1 2 3])
+(!assert another-list (list 1 2 3))

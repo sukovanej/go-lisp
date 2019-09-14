@@ -5,3 +5,6 @@
 (set my-dict-2 (dict "key" "value" "another-key" 42))
 (!assert (item my-dict-2 "key") "value")
 (!assert (item my-dict-2 "another-key") 42)
+
+(set another-list {"key" "value" "another" "another"})
+(!assert another-list (dict "key" "value" "another" "another"))

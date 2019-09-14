@@ -53,6 +53,10 @@ func EvalSyntax(value SyntaxValue, env *Env) Object {
 		return evalSymbol(value.(SymbolValue).Value, env)
 	case SYNTAX_LIST:
 		return evalFunction(value.(ListValue).Value, env)
+	case SYNTAX_LIST_LITERAL:
+		return evalFunction(append([]SyntaxValue{SymbolValue{Token{"list", SYMBOL}}}, value.(ListLiteralValue).Value...), env)
+	case SYNTAX_DICT_LITERAL:
+		return evalFunction(append([]SyntaxValue{SymbolValue{Token{"dict", SYMBOL}}}, value.(DictLiteralValue).Value...), env)
 	}
 
 	panic("Unexpected syntax token.")

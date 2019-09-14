@@ -11,7 +11,7 @@ TODO:
 (defn my-fn (arg-1 variadic..) (do-comething :with variadic))
 ```
 
- - [ ] dictionary syntax
+ - [x] dictionary syntax
 
 ```
 (set my-dict {
@@ -22,7 +22,7 @@ TODO:
 
  - [ ] error handling
  - [x] comments
- - [ ] list syntax
+ - [x] list syntax
 
 ```
 (set my-list [1 2 3 4])
