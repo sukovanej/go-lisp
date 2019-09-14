@@ -30,7 +30,7 @@ func Equal(left Object, right Object, env *Env) Object {
 
 func SetForm(args []SyntaxValue, env *Env) Object {
 	if len(args) != 2 {
-		return NewErrorWithSyntaxValue(args[0], fmt.Sprintf("Form set expects 2 arguments, %s given.", len(args)))
+		return NewErrorWithSyntaxValue(args[0], fmt.Sprintf("Form set expects 2 arguments, %d given.", len(args)))
 	}
 
 	obj := EvalSyntax(args[1], env)
@@ -40,7 +40,7 @@ func SetForm(args []SyntaxValue, env *Env) Object {
 
 func AssertCallable(args []Object, env *Env) Object {
 	if len(args) != 2 {
-		return NewErrorWithoutToken(fmt.Sprintf("Form assert expects 2 arguments, %s given.", len(args)))
+		return NewErrorWithoutToken(fmt.Sprintf("Form assert expects 2 arguments, %d given.", len(args)))
 	}
 
 	eqFunc, _ := env.GetEnvSymbol("==")
@@ -273,7 +273,7 @@ func GreaterOperator(args []Object, env *Env) Object {
 
 func NotOperator(args []Object, env *Env) Object {
 	if len(args) != 1 {
-		return NewErrorWithoutToken(fmt.Sprintf("Callable not expects 1 argument, %s given.", len(args)))
+		return NewErrorWithoutToken(fmt.Sprintf("Callable not expects 1 argument, %d given.", len(args)))
 	}
 
 	if !IsBoolObject(args[0]) {
