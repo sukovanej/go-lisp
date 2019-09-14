@@ -57,7 +57,7 @@ func getList(args []Object, env *Env) Object {
 	index := args[0].(NumberObject).Integer
 	list := args[1].(ListObject).List
 
-	if len(list) < index {
+	if len(list) <= index {
 		return NewErrorWithoutToken(fmt.Sprintf("Index out of range."))
 	}
 

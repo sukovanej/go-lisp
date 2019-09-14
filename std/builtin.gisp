@@ -80,9 +80,7 @@
     ; >> (set l (list 1 2 3 4))
     ; >> (map l (fn (x) (* x x)))
     ; [1, 4, 9, 16]
-    (if (== (len l) 1)
-        (list (p (first l)))
-        (+ (list (p (first l))) (map p (tail l)))))
+    (if (empty l) [] (append (p (last l)) (map p (head l)))))
 
 (defn split (delimiter str)
     ; split the str by delimiter

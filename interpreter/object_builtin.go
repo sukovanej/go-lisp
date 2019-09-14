@@ -277,8 +277,9 @@ func OrForm(args []SyntaxValue, env *Env) Object {
 }
 
 func GreaterOperator(args []Object, env *Env) Object {
-	result := OperatorFunc("<")(args, env).(BoolObject)
-	return BoolObject{!result.Value}
+	smaller := OperatorFunc("<")(args, env).(BoolObject).Value
+	equal := OperatorFunc("==")(args, env).(BoolObject).Value
+	return BoolObject{!smaller && !equal}
 }
 
 func NotOperator(args []Object, env *Env) Object {
@@ -304,7 +305,10 @@ func ShellCommandCallable(args []Object, env *Env) Object {
 	cmd := exec.Command("/bin/sh", []string{"-c", args[0].(StringObject).String}...)
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	cmd.Run()
+	err := cmd.Run()
+	if err != nil {
+		return NewErrorWithoutToken(err.Error())
+	}
 	return StringObject{out.String()}
 }
 
