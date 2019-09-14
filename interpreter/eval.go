@@ -175,6 +175,7 @@ func GetMainEnv() *Env {
 			"cond":      FormObject{CondForm},
 			"not":       CallableObject{NotOperator},
 			"@sh":       CallableObject{ShellCommandCallable},
+			"apply":     CallableObject{ApplyCallable},
 		},
 		nil,
 	}

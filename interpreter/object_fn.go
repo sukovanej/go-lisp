@@ -66,3 +66,12 @@ func DefLambdaForm(args []SyntaxValue, env *Env) Object {
 	env.Objects[args[0].(SymbolValue).Value.Symbol] = lambda
 	return lambda
 }
+
+func IsCallableObject(obj Object) bool {
+	switch obj.(type) {
+	case CallableObject:
+		return true
+	default:
+		return false
+	}
+}

@@ -7,6 +7,15 @@ type ListObject struct {
 	List []Object
 }
 
+func IsListObject(obj Object) bool {
+	switch obj.(type) {
+	case ListObject:
+		return true
+	default:
+		return false
+	}
+}
+
 func equalLists(args []Object, env *Env) Object {
 	first := args[0].(ListObject)
 

@@ -310,3 +310,20 @@ func ShellCommandCallable(args []Object, env *Env) Object {
 	}
 	return StringObject{out.String()}
 }
+
+func ApplyCallable(args []Object, env *Env) Object {
+	if len(args) != 2 {
+		return NewErrorWithoutToken(fmt.Sprintf("Callable not expects 2 argument, %d given.", len(args)))
+	}
+
+	if !IsCallableObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be callable."))
+	}
+
+	if !IsListObject(args[1]) {
+		fmt.Println(args[1])
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be list."))
+	}
+
+	return args[0].(CallableObject).Callable(args[1].(ListObject).List, env)
+}

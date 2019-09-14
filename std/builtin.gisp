@@ -1,6 +1,14 @@
 ; STD library for gisp
 
 
+(defn . (fns...)
+    ; compose function
+    ; when applied as ((. f1 f2 f3 f4) args) it behaves as (f4 (f3 (f2 (f1 args))))
+    (defn _apply-fns (fns x)
+        (if (empty fns) (first x) (_apply-fns (head fns) [(apply (last fns) x)])))
+    (fn (x...) (_apply-fns fns x)))
+
+
 (defn one-of (i l)
     ; is item `i` part of list `l`
     ; >> (one-of 1 [1 2 3])

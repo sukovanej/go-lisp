@@ -2,3 +2,15 @@
     (map fn var))
 
 (!assert (my-variadic-map (fn (x) (* x 2)) 1 2 3) [2 4 6])
+
+(defn double (var...)
+    (map (fn (x) (* x 2)) var))
+
+(!assert (double 1 2 3) [2 4 6])
+
+(defn f1 (x y) (* x y))
+(defn f2 (x) (* x x))
+
+; test compose function
+
+(!assert ((. f2 f1) 2 3) 36)
