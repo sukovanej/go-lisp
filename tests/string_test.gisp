@@ -10,3 +10,8 @@
 (!assert (words "hello world man") ["hello" "world" "man"])
 (!assert (one-of "h" "hello world") #t)
 (!assert (one-of "a" "hello world") #f)
+
+(import "string")
+
+(!assert (starts-with "hello" "hello world") #f)
+(!assert (starts-with "hello world" "hello") #t)

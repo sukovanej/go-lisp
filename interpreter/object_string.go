@@ -2,6 +2,8 @@ package interpreter
 
 // String object
 
+import "fmt"
+
 type StringObject struct {
 	String string
 }
@@ -29,6 +31,12 @@ func equalStrings(args []Object, env *Env) Object {
 func itemStrings(args []Object, env *Env) Object {
 	first := args[0].(StringObject).String
 	i := args[1].(NumberObject).Integer
+
+	if len(first) <= i {
+		iStringObject := GetStr(args[1], env)
+		return NewErrorWithoutToken(fmt.Sprintf("Index %s is out of range.", iStringObject.(StringObject).String))
+	}
+
 	return StringObject{string(first[i])}
 }
 

@@ -20,7 +20,7 @@ TODO:
 })
 ```
 
- - [ ] error handling
+ - [.] error handling
  - [ ] syntax error handling
  - [x] comments
  - [x] list syntax

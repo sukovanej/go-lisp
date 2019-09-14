@@ -19,25 +19,45 @@ const (
 	END
 )
 
-type Token struct {
-	Symbol string
-	Type   TokenType
+type BufferMetaInformation struct {
+	Line     int
+	Column   int
+	Filename string
 }
 
-func skipCommentsAndWhitespaces(r rune, err error, reader *bufio.Reader) (rune, error) {
+func (b *BufferMetaInformation) Incr(r rune) {
+	if r == '\n' {
+		b.Column = 0
+		b.Line++
+	} else {
+		b.Column++
+	}
+}
+
+type Token struct {
+	Symbol   string
+	Type     TokenType
+	Line     int
+	Column   int
+	Filename string
+}
+
+func skipCommentsAndWhitespaces(r rune, err error, reader *bufio.Reader, meta *BufferMetaInformation) (rune, error) {
 	// skip comments
 	if r == ';' {
 		for r != '\n' && err != io.EOF {
 			r, _, err = reader.ReadRune()
+			meta.Incr(r)
 		}
 	}
 
 	for r == ' ' || r == '\n' || r == '\t' {
 		r, _, err = reader.ReadRune()
+		meta.Incr(r)
 	}
 
 	if r == ';' {
-		return skipCommentsAndWhitespaces(r, err, reader)
+		return skipCommentsAndWhitespaces(r, err, reader, meta)
 	}
 
 	return r, err
@@ -56,36 +76,41 @@ func createSpecialCharacter(r rune) rune {
 	}
 }
 
-func GetToken(reader *bufio.Reader) Token {
+func GetToken(reader *bufio.Reader, meta *BufferMetaInformation) Token {
 	r, _, err := reader.ReadRune()
-	r, err = skipCommentsAndWhitespaces(r, err, reader)
+	meta.Incr(r)
+	r, err = skipCommentsAndWhitespaces(r, err, reader, meta)
+	line, column, file := meta.Line, meta.Column, meta.Filename
 
 	if r == '(' {
-		return Token{string(r), TOKEN_LPAR}
+		return Token{string(r), TOKEN_LPAR, line, column, file}
 	} else if r == '[' {
-		return Token{string(r), TOKEN_LIST_LPAR}
+		return Token{string(r), TOKEN_LIST_LPAR, line, column, file}
 	} else if r == '{' {
-		return Token{string(r), TOKEN_DICT_LPAR}
+		return Token{string(r), TOKEN_DICT_LPAR, line, column, file}
 	} else if r == ')' {
-		return Token{string(r), TOKEN_RPAR}
+		return Token{string(r), TOKEN_RPAR, line, column, file}
 	} else if r == ']' {
-		return Token{string(r), TOKEN_LIST_RPAR}
+		return Token{string(r), TOKEN_LIST_RPAR, line, column, file}
 	} else if r == '}' {
-		return Token{string(r), TOKEN_DICT_RPAR}
+		return Token{string(r), TOKEN_DICT_RPAR, line, column, file}
 	} else if r == '"' {
 		str := ""
 		r, _, err = reader.ReadRune()
+		meta.Incr(r)
 		for r != '"' {
 			if r == '\\' {
 				r, _, err = reader.ReadRune()
+				meta.Incr(r)
 				r = createSpecialCharacter(r)
 			}
 			str += string(r)
 			r, _, err = reader.ReadRune()
+			meta.Incr(r)
 		}
-		return Token{str, SYMBOL_STRING}
+		return Token{str, SYMBOL_STRING, line, column, file}
 	} else if err == io.EOF {
-		return Token{"", END}
+		return Token{"", END, line, column, file}
 	}
 
 	result := string(r)
@@ -101,8 +126,9 @@ func GetToken(reader *bufio.Reader) Token {
 			reader.UnreadRune()
 			break
 		}
+		meta.Incr(r)
 		result += string(r)
 	}
 
-	return Token{result, SYMBOL}
+	return Token{result, SYMBOL, line, column, file}
 }

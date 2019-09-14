@@ -13,7 +13,8 @@ func EvalFile(file string, env *Env) Object {
 	if err != nil {
 		panic(err)
 	}
-	return Eval(bufio.NewReader(f), env)
+	meta := &BufferMetaInformation{0, 0, file}
+	return Eval(bufio.NewReader(f), env, meta)
 }
 
 func SetupMainEnv() *Env {
@@ -35,13 +36,18 @@ func SetupMainEnv() *Env {
 	return env
 }
 
-func Eval(reader *bufio.Reader, env *Env) Object {
-	syntaxTree := GetSyntax(reader)
+func Eval(reader *bufio.Reader, env *Env, meta *BufferMetaInformation) Object {
+	syntaxTree := GetSyntax(reader, meta)
 	var lastResult Object
 
 	for syntaxTree != nil {
 		lastResult = EvalSyntax(syntaxTree, env)
-		syntaxTree = GetSyntax(reader)
+
+		if IsErrorObject(lastResult) {
+			return lastResult
+		}
+
+		syntaxTree = GetSyntax(reader, meta)
 	}
 
 	return lastResult
@@ -56,7 +62,7 @@ func EvalSyntax(value SyntaxValue, env *Env) Object {
 	case SYNTAX_LIST_LITERAL:
 		return evalListLiteral(value.(ListLiteralValue), env)
 	case SYNTAX_DICT_LITERAL:
-		return evalFunction(append([]SyntaxValue{SymbolValue{Token{"dict", SYMBOL}}}, value.(DictLiteralValue).Value...), env)
+		return evalDictLiteral(value.(DictLiteralValue), env)
 	}
 
 	panic("Unexpected syntax token.")
@@ -70,6 +76,14 @@ func evalListLiteral(args ListLiteralValue, env *Env) Object {
 	return ListCallable(argObjects, env)
 }
 
+func evalDictLiteral(args DictLiteralValue, env *Env) Object {
+	argObjects := []Object{}
+	for _, value := range args.Value {
+		argObjects = append(argObjects, EvalSyntax(value, env))
+	}
+	return DictCallable(argObjects, env)
+}
+
 func evalSymbol(token Token, env *Env) Object {
 	if token.Type == SYMBOL_STRING {
 		return StringObject{token.Symbol}
@@ -78,7 +92,7 @@ func evalSymbol(token Token, env *Env) Object {
 	} else {
 		obj, ok := env.GetEnvSymbol(token.Symbol)
 		if !ok {
-			panic(fmt.Sprintf("Symbol %s not found.", token.Symbol))
+			return NewError(token, fmt.Sprintf("Symbol %s not found", token.Symbol))
 		}
 		return obj
 	}
@@ -86,12 +100,20 @@ func evalSymbol(token Token, env *Env) Object {
 
 func evalFunction(list []SyntaxValue, env *Env) Object {
 	function := EvalSyntax(list[0], env)
+
+	if IsErrorObject(function) {
+		return function
+	}
+
 	switch function.(type) {
 	case CallableObject:
 		args := []Object{}
 
 		for _, arg := range list[1:len(list)] {
 			value := EvalSyntax(arg, env)
+			if IsErrorObject(value) {
+				return value
+			}
 			args = append(args, value)
 		}
 
@@ -100,7 +122,7 @@ func evalFunction(list []SyntaxValue, env *Env) Object {
 		args := list[1:len(list)]
 		return function.(FormObject).Callable(args, env)
 	default:
-		panic("First item must be callable")
+		return NewErrorWithSyntaxValue(list[0], "First item must be callable")
 	}
 }
 
@@ -117,7 +139,9 @@ func GetMainEnv() *Env {
 			"#t":        BoolObject{true},
 			"#f":        BoolObject{false},
 			"==":        CallableObject{OperatorFunc("==")},
+			"<":         CallableObject{SlotCallable("__<__", 2)},
 			"!=":        CallableObject{NotEqualOperator},
+			">":         CallableObject{GreaterOperator},
 			"#nil":      NilObject{},
 			"if":        FormObject{IfForm},
 			"!assert":   CallableObject{AssertCallable},
@@ -136,9 +160,10 @@ func GetMainEnv() *Env {
 			"import":    CallableObject{ImportCallable},
 			"list":      CallableObject{ListCallable},
 			"len":       CallableObject{SlotCallable("__len__", 1)},
-			"<":         CallableObject{SlotCallable("__<__", 2)},
 			"slice":     CallableObject{SlotCallable("__slice__", 3)},
 			"append":    CallableObject{SlotCallable("__append__", 2)},
+			"and":       FormObject{AndForm},
+			"or":        FormObject{OrForm},
 		},
 		nil,
 	}

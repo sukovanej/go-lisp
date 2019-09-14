@@ -1,0 +1,5 @@
+(!assert (and #t #t #t) #t)
+(!assert (and #t #f #t) #f)
+(!assert (or #t #f #t) #t)
+(!assert (or #f #f #t) #t)
+(!assert (or #f #f #f) #f)

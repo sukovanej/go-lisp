@@ -6,14 +6,27 @@ func IfForm(args []SyntaxValue, env *Env) Object {
 	}
 
 	condition := EvalSyntax(args[0], env)
+
+	if IsErrorObject(condition) {
+		return condition
+	}
+
 	switch condition.(type) {
 	case BoolObject:
 		if condition.(BoolObject).Value {
-			return EvalSyntax(args[1], env)
+			result := EvalSyntax(args[1], env)
+			if IsErrorObject(result) {
+				return result
+			}
+			return result
 		}
 
 		if len(args) == 3 {
-			return EvalSyntax(args[2], env)
+			result := EvalSyntax(args[2], env)
+			if IsErrorObject(result) {
+				return result
+			}
+			return result
 		} else {
 			n, _ := env.GetEnvSymbol("#nil")
 			return n

@@ -8,7 +8,7 @@ func OperatorFunc(operatorName string) func([]Object, *Env) Object {
 	return func(args []Object, env *Env) Object {
 		operatorFunc, ok := GetSlot(args[0], "__"+operatorName+"__")
 		if !ok {
-			panic(fmt.Sprintf("Operator %s slot not found on %v.", operatorName, args[0]))
+			return NewErrorWithoutToken(fmt.Sprintf("Slot %s not found on %v.", operatorName, args[0]))
 		}
 		operatorCallable := operatorFunc.(CallableObject).Callable
 		result := args[0]
@@ -19,18 +19,18 @@ func OperatorFunc(operatorName string) func([]Object, *Env) Object {
 	}
 }
 
-func Equal(left Object, right Object, env *Env) BoolObject {
+func Equal(left Object, right Object, env *Env) Object {
 	operatorFunc, ok := GetSlot(left, "__==__")
 	if !ok {
-		panic("__==__ slot not found.")
+		return NewErrorWithoutToken(fmt.Sprintf("Slot __==__ not found on %v.", left))
 	}
 	operatorCallable := operatorFunc.(CallableObject).Callable
-	return operatorCallable([]Object{left, right}, env).(BoolObject)
+	return operatorCallable([]Object{left, right}, env)
 }
 
 func SetForm(args []SyntaxValue, env *Env) Object {
 	if len(args) != 2 {
-		panic("Wrong number of arguments")
+		return NewErrorWithSyntaxValue(args[0], fmt.Sprintf("Form set expects 2 arguments, %s given.", len(args)))
 	}
 
 	obj := EvalSyntax(args[1], env)
@@ -40,12 +40,20 @@ func SetForm(args []SyntaxValue, env *Env) Object {
 
 func AssertCallable(args []Object, env *Env) Object {
 	if len(args) != 2 {
-		panic("Wrong number of arguments")
+		return NewErrorWithoutToken(fmt.Sprintf("Form assert expects 2 arguments, %s given.", len(args)))
 	}
 
 	eqFunc, _ := env.GetEnvSymbol("==")
 	if !eqFunc.(CallableObject).Callable(args, env).(BoolObject).Value {
-		panic("Assertion error")
+		stringLeft := GetStr(args[0], env)
+		if IsErrorObject(stringLeft) {
+			return stringLeft
+		}
+		stringRight := GetStr(args[1], env)
+		if IsErrorObject(stringRight) {
+			return stringRight
+		}
+		return NewErrorWithoutToken(fmt.Sprintf("Assertion error. %s != %s", stringLeft, stringRight))
 	}
 	nilObject, _ := env.GetEnvSymbol("#nil")
 	return nilObject
@@ -148,7 +156,7 @@ func NotEqualOperator(args []Object, env *Env) Object {
 func SlotCallable(slotName string, numberOfArguments int) func([]Object, *Env) Object {
 	return func(args []Object, env *Env) Object {
 		if len(args) != numberOfArguments {
-			panic(fmt.Sprintf("Expected %d arguments, %d given.", numberOfArguments, len(args)))
+			return NewErrorWithoutToken(fmt.Sprintf("Callable expects %d arguments, %d was given.", numberOfArguments, len(args)))
 		}
 		operatorFunc, ok := GetSlot(args[0], slotName)
 		if !ok {
@@ -174,7 +182,7 @@ func ImportCallable(args []Object, env *Env) Object {
 			if err != nil {
 				panic(err)
 			}
-			return Eval(bufio.NewReader(f), env)
+			return Eval(bufio.NewReader(f), env, &BufferMetaInformation{0, 0, fileName})
 		}
 	}
 	panic(fmt.Sprintf("Dependency %s not found", importFileString))
@@ -193,13 +201,13 @@ func DictCallable(args []Object, env *Env) Object {
 	return dictObject
 }
 
-func GetStr(obj Object, env *Env) StringObject {
+func GetStr(obj Object, env *Env) Object {
 	operatorFunc, ok := GetSlot(obj, "__str__")
 	if !ok {
-		panic(fmt.Sprintf("__str__ slot not found on %s.", obj))
+		return NewErrorWithoutToken(fmt.Sprintf("__str__ slot not found on %s.", obj))
 	}
 	operatorCallable := operatorFunc.(CallableObject).Callable
-	return operatorCallable([]Object{obj}, env).(StringObject)
+	return operatorCallable([]Object{obj}, env)
 }
 
 func EnvCallable(args []Object, env *Env) Object {
@@ -213,4 +221,43 @@ func EnvCallable(args []Object, env *Env) Object {
 
 func ListCallable(args []Object, env *Env) Object {
 	return ListObject{args}
+}
+
+func AndForm(args []SyntaxValue, env *Env) Object {
+	if len(args) == 0 {
+		panic("Wrong number of arguments")
+	}
+
+	for _, arg := range args {
+		value := EvalSyntax(arg, env)
+		if !value.(BoolObject).Value {
+			f, _ := env.GetEnvSymbol("#f")
+			return f
+		}
+	}
+
+	t, _ := env.GetEnvSymbol("#t")
+	return t
+}
+
+func OrForm(args []SyntaxValue, env *Env) Object {
+	if len(args) == 0 {
+		panic("Wrong number of arguments")
+	}
+
+	for _, arg := range args {
+		value := EvalSyntax(arg, env)
+		if value.(BoolObject).Value {
+			t, _ := env.GetEnvSymbol("#t")
+			return t
+		}
+	}
+
+	f, _ := env.GetEnvSymbol("#f")
+	return f
+}
+
+func GreaterOperator(args []Object, env *Env) Object {
+	result := OperatorFunc("<")(args, env).(BoolObject)
+	return BoolObject{!result.Value}
 }

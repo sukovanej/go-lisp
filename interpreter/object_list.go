@@ -20,8 +20,13 @@ func equalLists(args []Object, env *Env) Object {
 
 		for index, firstObject := range first.List {
 			secondObject := second.List[index]
+			equal := Equal(firstObject, secondObject, env)
 
-			if !Equal(firstObject, secondObject, env).Value {
+			if IsErrorObject(equal) {
+				return equal
+			}
+
+			if !equal.(BoolObject).Value {
 				return BoolObject{false}
 			}
 		}
@@ -70,7 +75,11 @@ func strList(args []Object, env *Env) Object {
 	l := len(listObject.List)
 	result := "["
 	for i, entry := range listObject.List {
-		result += GetStr(entry, env).String
+		str := GetStr(entry, env)
+		if IsErrorObject(str) {
+			return str
+		}
+		result += str.(StringObject).String
 
 		if i < l-1 {
 			result += ", "

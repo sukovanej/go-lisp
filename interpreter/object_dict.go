@@ -2,6 +2,8 @@ package interpreter
 
 // Dict object
 
+import "fmt"
+
 type DictObjectEntry struct {
 	HashKey string
 	Key     Object
@@ -51,7 +53,7 @@ func GetHash(obj Object, env *Env) string {
 	hashObject, ok := GetSlot(obj, "__hash__")
 
 	if !ok {
-		panic("Object is not hashable.")
+		NewErrorWithoutToken(fmt.Sprintf(""))
 	}
 
 	switch hashObject.(type) {
@@ -82,8 +84,13 @@ func equalDicts(args []Object, env *Env) Object {
 		firstEntry := first.Dict[0]
 		for firstEntry != nil {
 			secondEntry := second.Get(firstEntry.Key, env)
+			equal := Equal(firstEntry.Value, secondEntry, env)
 
-			if secondEntry == nil || !Equal(firstEntry.Value, secondEntry, env).Value {
+			if IsErrorObject(equal) {
+				return equal
+			}
+
+			if secondEntry == nil || !equal.(BoolObject).Value {
 				return BoolObject{false}
 			}
 
@@ -121,7 +128,16 @@ func strDict(args []Object, env *Env) Object {
 	result := "{"
 	entry := dictObject.Dict[0]
 	for entry != nil {
-		result += GetStr(entry.Key, env).String + ": " + GetStr(entry.Value, env).String
+		keyObject := GetStr(entry.Key, env)
+		if IsErrorObject(keyObject) {
+			return keyObject
+		}
+		valueObject := GetStr(entry.Value, env)
+		if IsErrorObject(valueObject) {
+			return valueObject
+		}
+
+		result += keyObject.(StringObject).String + ": " + valueObject.(StringObject).String
 		entry = entry.Next
 
 		if entry != nil {

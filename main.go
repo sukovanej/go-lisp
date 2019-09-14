@@ -14,11 +14,17 @@ func main() {
 		runRepl(env)
 	} else if len(os.Args) == 2 {
 		env := SetupMainEnv()
-		EvalFile(os.Args[1], env)
+		result := EvalFile(os.Args[1], env)
+		if IsErrorObject(result) {
+			PrintTraceback(result.(ErrorObject))
+		}
 	} else if len(os.Args) == 3 {
 		if os.Args[1] == "-i" {
 			env := SetupMainEnv()
-			EvalFile(os.Args[2], env)
+			result := EvalFile(os.Args[2], env)
+			if IsErrorObject(result) {
+				PrintTraceback(result.(ErrorObject))
+			}
 			runRepl(env)
 		}
 	}
@@ -31,7 +37,10 @@ func runRepl(env *Env) {
 	for {
 		fmt.Print(">> ")
 		text, _ := reader.ReadString('\n')
-		result := Eval(bufio.NewReader(strings.NewReader(text)), env)
+		result := Eval(bufio.NewReader(strings.NewReader(text)), env, &BufferMetaInformation{0, 0, "<REPL>"})
+		if IsErrorObject(result) {
+			PrintTraceback(result.(ErrorObject))
+		}
 		PrintCallable([]Object{result}, env)
 		fmt.Println()
 	}

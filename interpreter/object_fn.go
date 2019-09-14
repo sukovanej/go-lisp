@@ -33,6 +33,9 @@ func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *
 		var last Object
 		for _, statement := range body {
 			last = EvalSyntax(statement, internal_env)
+			if IsErrorObject(last) {
+				return last.(ErrorObject).TraceErrorWithSyntaxValue(statement, "")
+			}
 		}
 		return last
 	}}
