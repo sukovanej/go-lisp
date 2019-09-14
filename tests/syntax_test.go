@@ -61,6 +61,26 @@ func compareSyntax(left SyntaxValue, right SyntaxValue) bool {
 		default:
 			return false
 		}
+	case SYNTAX_DICT_LITERAL:
+		switch right.GetType() {
+		case SYNTAX_DICT_LITERAL:
+			leftValue := left.(DictLiteralValue).Value
+			rightValue := right.(DictLiteralValue).Value
+
+			if len(leftValue) != len(rightValue) {
+				return false
+			}
+
+			for i := 0; i < len(leftValue); i++ {
+				if !compareSyntax(leftValue[i], rightValue[i]) {
+					return false
+				}
+			}
+			return true
+
+		default:
+			return false
+		}
 	}
 
 	return false
@@ -246,6 +266,26 @@ func TestSyntaxList(t *testing.T) {
 					SymbolValue{Token{"2", SYMBOL}},
 					SymbolValue{Token{"3", SYMBOL}},
 					SymbolValue{Token{"4", SYMBOL}},
+				},
+			},
+		},
+	}
+	outputSyntax = GetSyntax(inputSyntax)
+	if !compareSyntax(expectedSyntax, outputSyntax) {
+		t.Errorf("%v != %v.", expectedSyntax, outputSyntax)
+	}
+}
+
+func TestSyntaxDict(t *testing.T) {
+	inputSyntax = bufio.NewReader(strings.NewReader(`(test {"key" "value"})`))
+
+	expectedSyntax = ListValue{
+		[]SyntaxValue{
+			SymbolValue{Token{"test", SYMBOL}},
+			DictLiteralValue{
+				[]SyntaxValue{
+					SymbolValue{Token{"key", SYMBOL_STRING}},
+					SymbolValue{Token{"value", SYMBOL_STRING}},
 				},
 			},
 		},

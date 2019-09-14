@@ -41,6 +41,14 @@ func (_ ListLiteralValue) GetType() SyntaxType {
 	return SYNTAX_LIST_LITERAL
 }
 
+type DictLiteralValue struct {
+	Value []SyntaxValue
+}
+
+func (_ DictLiteralValue) GetType() SyntaxType {
+	return SYNTAX_DICT_LITERAL
+}
+
 func GetSyntax(reader *bufio.Reader) SyntaxValue {
 	token := GetToken(reader)
 
@@ -52,6 +60,8 @@ func GetSyntax(reader *bufio.Reader) SyntaxValue {
 		return ListValue{getSyntax(reader)}
 	} else if token.Type == TOKEN_LIST_LPAR {
 		return ListLiteralValue{getSyntax(reader)}
+	} else if token.Type == TOKEN_DICT_LPAR {
+		return DictLiteralValue{getSyntax(reader)}
 	}
 
 	if token.Type == END {
@@ -72,11 +82,17 @@ func getSyntax(reader *bufio.Reader) []SyntaxValue {
 			list = append(list, ListValue{getSyntax(reader)})
 		} else if token.Type == TOKEN_LIST_LPAR {
 			list = append(list, ListLiteralValue{getSyntax(reader)})
-		} else if token.Type == TOKEN_RPAR || token.Type == TOKEN_LIST_RPAR {
+		} else if token.Type == TOKEN_DICT_LPAR {
+			list = append(list, DictLiteralValue{getSyntax(reader)})
+		} else if token.Type == TOKEN_RPAR || token.Type == TOKEN_LIST_RPAR || token.Type == TOKEN_DICT_RPAR {
 			break
 		}
 
 		token = GetToken(reader)
+
+		if token.Type == END {
+			panic("Unxpected end of file.")
+		}
 	}
 
 	if token.Type == END {
