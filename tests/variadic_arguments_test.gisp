@@ -1,0 +1,4 @@
+(defn my-variadic-map (fn var...)
+    (map fn var))
+
+(!assert (my-variadic-map (fn (x) (* x 2)) 1 2 3) [2 4 6])

@@ -52,7 +52,7 @@ func (_ DictLiteralValue) GetType() SyntaxType {
 func GetSyntax(reader *bufio.Reader, meta *BufferMetaInformation) SyntaxValue {
 	token := GetToken(reader, meta)
 
-	if token.Type == SYMBOL || token.Type == SYMBOL_STRING {
+	if token.Type == SYMBOL || token.Type == SYMBOL_STRING || token.Type == SYMBOL_VARIADIC {
 		return SymbolValue{token}
 	}
 
@@ -76,7 +76,7 @@ func getSyntax(reader *bufio.Reader, meta *BufferMetaInformation) []SyntaxValue 
 	token := GetToken(reader, meta)
 
 	for token.Type != END && token.Type != TOKEN_RPAR {
-		if token.Type == SYMBOL || token.Type == SYMBOL_STRING {
+		if token.Type == SYMBOL || token.Type == SYMBOL_STRING || token.Type == SYMBOL_VARIADIC {
 			list = append(list, SymbolValue{token})
 		} else if token.Type == TOKEN_LPAR {
 			list = append(list, ListValue{getSyntax(reader, meta)})

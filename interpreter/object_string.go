@@ -8,6 +8,15 @@ type StringObject struct {
 	String string
 }
 
+func IsStringObject(obj Object) bool {
+	switch obj.(type) {
+	case StringObject:
+		return true
+	default:
+		return false
+	}
+}
+
 func addStrings(args []Object, env *Env) Object {
 	first := args[0].(StringObject)
 	second := args[1].(StringObject)

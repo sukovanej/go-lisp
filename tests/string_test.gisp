@@ -6,14 +6,31 @@
 (!assert (tail "hello") "ello")
 (!assert (head "hello") "hell")
 (!assert (tail "h") "")
-(!assert (words "h") ["h"])
-(!assert (words "hello world man") ["hello" "world" "man"])
+
+(!assert (split "h" " ") ["h"])
+(!assert (split "" " ") [])
+(!assert (split "hello world man" " ") ["hello" "world" "man"])
+(!assert (split "aabaa" "b") ["aa" "aa"])
+
 (!assert (one-of "h" "hello world") #t)
 (!assert (one-of "a" "hello world") #f)
 
 (import "string")
 
+(!assert (words "h") ["h"])
+(!assert (words "hello world man") ["hello" "world" "man"])
+
+(!assert (lines "h") ["h"])
+(!assert (lines "h\n") ["h"])
+(!assert (lines "hello\nworld\nman") ["hello" "world" "man"])
+
 (!assert (starts-with "hello" "hello world") #f)
 (!assert (starts-with "hello world" "hello") #t)
 (!assert (starts-with "ahoj" "ah") #t)
 (!assert (starts-with "ahoj" "ha") #f)
+
+(!assert (is-alpha "123") #t)
+(!assert (is-alpha "12a23") #f)
+(!assert (is-alpha "") #f)
+
+;(!assert (columnize "1  2 2   4    3") [["1" "2" "2" "4" "3"]])

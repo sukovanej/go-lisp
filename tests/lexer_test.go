@@ -274,3 +274,21 @@ func TestTokenSpecialStringCharacters(t *testing.T) {
 		}
 	}
 }
+
+func TestTokenVariadicArguments(t *testing.T) {
+	inputLexer = bufio.NewReader(strings.NewReader(`(test another...)`))
+	expectedResult := []Token{
+		CreateToken("(", TOKEN_LPAR),
+		CreateToken("test", SYMBOL),
+		CreateToken("another", SYMBOL_VARIADIC),
+		CreateToken(")", TOKEN_RPAR),
+		CreateToken("", END),
+	}
+
+	for _, token := range expectedResult {
+		expectedToken = GetToken(inputLexer, &BufferMetaInformation{0, 0, "<test>"})
+		if !CompareTokens(token, expectedToken) {
+			t.Errorf("%v != %v.", token, expectedToken)
+		}
+	}
+}

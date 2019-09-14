@@ -1,8 +1,12 @@
 package interpreter
 
-import "bufio"
-import "fmt"
-import "os"
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"os"
+	"os/exec"
+)
 
 func OperatorFunc(operatorName string) func([]Object, *Env) Object {
 	return func(args []Object, env *Env) Object {
@@ -44,7 +48,13 @@ func AssertCallable(args []Object, env *Env) Object {
 	}
 
 	eqFunc, _ := env.GetEnvSymbol("==")
-	if !eqFunc.(CallableObject).Callable(args, env).(BoolObject).Value {
+	equalConditionObject := eqFunc.(CallableObject).Callable(args, env)
+
+	if IsErrorObject(equalConditionObject) {
+		return equalConditionObject
+	}
+
+	if !equalConditionObject.(BoolObject).Value {
 		stringLeft := GetStr(args[0], env)
 		if IsErrorObject(stringLeft) {
 			return stringLeft
@@ -280,4 +290,23 @@ func NotOperator(args []Object, env *Env) Object {
 		return NewErrorWithoutToken(fmt.Sprintf("Object must be bool."))
 	}
 	return BoolObject{!args[0].(BoolObject).Value}
+}
+
+func ShellCommandCallable(args []Object, env *Env) Object {
+	if len(args) != 1 {
+		return NewErrorWithoutToken(fmt.Sprintf("Callable not expects 1 argument, %d given.", len(args)))
+	}
+
+	if !IsStringObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be string."))
+	}
+
+	cmd := exec.Command("/bin/sh", []string{"-c", args[0].(StringObject).String}...)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return NewErrorWithoutToken(err.Error())
+	}
+	return StringObject{out.String()}
 }

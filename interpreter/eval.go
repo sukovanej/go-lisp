@@ -13,7 +13,7 @@ func EvalFile(file string, env *Env) Object {
 	if err != nil {
 		panic(err)
 	}
-	meta := &BufferMetaInformation{0, 0, file}
+	meta := &BufferMetaInformation{1, 1, file}
 	return Eval(bufio.NewReader(f), env, meta)
 }
 
@@ -117,10 +117,18 @@ func evalFunction(list []SyntaxValue, env *Env) Object {
 			args = append(args, value)
 		}
 
-		return function.(CallableObject).Callable(args, env)
+		result := function.(CallableObject).Callable(args, env)
+		if IsErrorObject(result) {
+			result = result.(ErrorObject).TraceErrorWithSyntaxValue(list[0], "")
+		}
+		return result
 	case FormObject:
 		args := list[1:len(list)]
-		return function.(FormObject).Callable(args, env)
+		result := function.(FormObject).Callable(args, env)
+		if IsErrorObject(result) {
+			result = result.(ErrorObject).TraceErrorWithSyntaxValue(list[0], "")
+		}
+		return result
 	default:
 		return NewErrorWithSyntaxValue(list[0], "First item must be callable")
 	}
@@ -166,6 +174,7 @@ func GetMainEnv() *Env {
 			"or":        FormObject{OrForm},
 			"cond":      FormObject{CondForm},
 			"not":       CallableObject{NotOperator},
+			"@sh":       CallableObject{ShellCommandCallable},
 		},
 		nil,
 	}

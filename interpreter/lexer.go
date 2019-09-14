@@ -16,6 +16,7 @@ const (
 	TOKEN_DICT_RPAR
 	SYMBOL
 	SYMBOL_STRING
+	SYMBOL_VARIADIC
 	END
 )
 
@@ -128,6 +129,10 @@ func GetToken(reader *bufio.Reader, meta *BufferMetaInformation) Token {
 		}
 		meta.Incr(r)
 		result += string(r)
+	}
+
+	if len(result) > 3 && result[len(result)-3:] == "..." {
+		return Token{result[:len(result)-3], SYMBOL_VARIADIC, line, column, file}
 	}
 
 	return Token{result, SYMBOL, line, column, file}

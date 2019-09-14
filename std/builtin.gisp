@@ -68,17 +68,16 @@
         (list (p (first l)))
         (+ (list (p (first l))) (map p (tail l)))))
 
-
-(defn words (str)
-    ; split the string by words
-    ; >> (words "hello world")
+(defn split (str delimiter)
+    ; split the str by delimiter
+    ; >> (split "hello world" " ")
     ; ["hello" "world"]
-    (defn _words (str current result)
+    (defn _split (str current result)
         (if (== str "")
-            (append result current)
-            (if (== (first str) " ")
+            (if (empty current) result (append result current))
+            (if (== (first str) delimiter)
                 (if (== current "")
-                    (_words (tail str) "" result)
-                    (_words (tail str) "" (append result current)))
-                (_words (tail str) (+ current (first str)) result))))
-    (_words str "" []))
+                    (_split (tail str) "" result)
+                    (_split (tail str) "" (append result current)))
+                (_split (tail str) (+ current (first str)) result))))
+    (_split str "" []))
