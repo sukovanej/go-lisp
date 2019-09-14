@@ -18,9 +18,10 @@ func (o FormObject) GetSlots() map[string]Object {
 func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *Env) CallableObject {
 	return CallableObject{func(args []Object, _ *Env) Object {
 		internal_env := &Env{map[string]Object{}, env}
-		isVariadic := declared_args[len(declared_args)-1].(SymbolValue).Value.Type == SYMBOL_VARIADIC
+		isVariadic := len(declared_args) != 0 && declared_args[len(declared_args)-1].(SymbolValue).Value.Type == SYMBOL_VARIADIC
 
 		if len(declared_args) != len(args) && !isVariadic {
+			// TODO: error when declared_args is empty
 			return NewErrorWithSyntaxValue(declared_args[0], fmt.Sprintf("Expected %d arguments, %d given.", len(declared_args), len(args)))
 		}
 

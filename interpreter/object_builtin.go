@@ -304,10 +304,7 @@ func ShellCommandCallable(args []Object, env *Env) Object {
 	cmd := exec.Command("/bin/sh", []string{"-c", args[0].(StringObject).String}...)
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		return NewErrorWithoutToken(err.Error())
-	}
+	cmd.Run()
 	return StringObject{out.String()}
 }
 
@@ -326,4 +323,24 @@ func ApplyCallable(args []Object, env *Env) Object {
 	}
 
 	return args[0].(CallableObject).Callable(args[1].(ListObject).List, env)
+}
+
+func CommandLineArgumentsCallable(args []Object, env *Env) Object {
+	listObjects := []Object{}
+	for _, arg := range os.Args {
+		listObjects = append(listObjects, StringObject{arg})
+	}
+	return ListObject{listObjects}
+}
+
+func PrognForm(args []SyntaxValue, env *Env) Object {
+	last, _ := env.GetEnvSymbol("#nil")
+	for _, statement := range args {
+		last := EvalSyntax(statement, env)
+
+		if IsErrorObject(last) {
+			return last
+		}
+	}
+	return last
 }

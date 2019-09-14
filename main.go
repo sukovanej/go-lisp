@@ -13,20 +13,28 @@ func main() {
 		env := SetupMainEnv()
 		runRepl(env)
 	} else if len(os.Args) == 2 {
+		runFile(os.Args[1])
+	} else if len(os.Args) == 3 && os.Args[1] == "-i" {
 		env := SetupMainEnv()
-		result := EvalFile(os.Args[1], env)
+		result := EvalFile(os.Args[2], env)
 		if IsErrorObject(result) {
 			PrintTraceback(result.(ErrorObject))
 		}
-	} else if len(os.Args) == 3 {
-		if os.Args[1] == "-i" {
-			env := SetupMainEnv()
-			result := EvalFile(os.Args[2], env)
-			if IsErrorObject(result) {
-				PrintTraceback(result.(ErrorObject))
-			}
-			runRepl(env)
+		runRepl(env)
+	} else if len(os.Args) >= 2 {
+		if _, err := os.Stat(os.Args[1]); !os.IsNotExist(err) {
+			runFile(os.Args[1])
+		} else {
+			fmt.Println("file not found")
 		}
+	}
+}
+
+func runFile(file string) {
+	env := SetupMainEnv()
+	result := EvalFile(file, env)
+	if IsErrorObject(result) {
+		PrintTraceback(result.(ErrorObject))
 	}
 }
 

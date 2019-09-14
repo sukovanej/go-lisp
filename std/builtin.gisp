@@ -107,3 +107,13 @@
     (if (empty l)
         ""
         (+ (first l) (if (empty tail-l) "" delimiter) (join delimiter tail-l))))
+
+
+(defn for (callable l)
+    ; do side-effect on a list
+    ; >> (for (fn (item) (println item)) (map str [1 2 3]))
+    ; 1
+    ; 2
+    ; 3
+    (if (not (empty l))
+        (progn (callable (first l)) (for callable (tail l)))))

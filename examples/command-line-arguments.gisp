@@ -1,0 +1,17 @@
+#!/usr/local/bin/gisp
+(import "string")
+(set arguments (slice 2 (len (@args)) (@args)))
+
+(defn docker-stop () 
+    (set containers ((. (? map (? item 0)) tail columnize @sh) "docker ps"))
+    (println "stopping these containers: " containers)
+    (for (fn (container)
+            (progn
+                (@sh (+ "docker stop " (first container)))
+                (print "."))) containers)
+    (println "\ndone"))
+
+(cond
+    (!= 1 (len arguments)) (println "unexpected number of arguments")
+    (== (item 0 arguments) "stop") (docker-stop)
+    #t (println "unknown argument"))

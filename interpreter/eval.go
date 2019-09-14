@@ -8,13 +8,25 @@ import (
 	"strconv"
 )
 
+func skipShebang(reader *bufio.Reader) {
+	r, err := reader.Peek(2)
+	if err != nil {
+		panic(err)
+	}
+	if string(r) == "#!" {
+		reader.ReadLine()
+	}
+}
+
 func EvalFile(file string, env *Env) Object {
 	f, err := os.Open(file)
 	if err != nil {
 		panic(err)
 	}
 	meta := &BufferMetaInformation{1, 1, file}
-	return Eval(bufio.NewReader(f), env, meta)
+	reader := bufio.NewReader(f)
+	skipShebang(reader)
+	return Eval(reader, env, meta)
 }
 
 func SetupMainEnv() *Env {
@@ -30,6 +42,7 @@ func SetupMainEnv() *Env {
 
 	env.SetSymbol("__import_path__", ListObject{[]Object{
 		StringObject{systemPath + "/std"},
+		StringObject{"/usr/local/lib/gisp-std"},
 		StringObject{pwdPath},
 	}})
 	ImportCallable([]Object{StringObject{"builtin"}}, env)
@@ -176,6 +189,8 @@ func GetMainEnv() *Env {
 			"not":       CallableObject{NotOperator},
 			"@sh":       CallableObject{ShellCommandCallable},
 			"apply":     CallableObject{ApplyCallable},
+			"@args":     CallableObject{CommandLineArgumentsCallable},
+			"progn":     FormObject{PrognForm},
 		},
 		nil,
 	}
