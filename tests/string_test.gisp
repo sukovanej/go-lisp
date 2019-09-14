@@ -33,4 +33,5 @@
 (!assert (is-alpha "12a23") #f)
 (!assert (is-alpha "") #f)
 
-;(!assert (columnize "1  2 2   4    3") [["1" "2" "2" "4" "3"]])
+(!assert (columnize "1  2 2   4    3") [["1" "2" "2" "4" "3"]])
+(!assert (join ["hello" "world"] ", ") "hello, world")

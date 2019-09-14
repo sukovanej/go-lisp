@@ -89,3 +89,13 @@
                     (_split (tail str) "" (append result current)))
                 (_split (tail str) (+ current (first str)) result))))
     (_split str "" []))
+
+
+(defn join (l delimiter)
+    ; join list into string
+    ; >> (join ", " ["hello", "world"]
+    ; "hello, world"
+    (set tail-l (tail l))
+    (if (empty l)
+        ""
+        (+ (first l) (if (empty tail-l) "" delimiter) (join tail-l delimiter))))
