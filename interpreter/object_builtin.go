@@ -34,7 +34,7 @@ func SetForm(args []SyntaxValue, env *Env) Object {
 	}
 
 	obj := EvalSyntax(args[1], env)
-	env.SetSymbol(args[0].(Token).Symbol, obj)
+	env.SetSymbol(args[0].(SymbolValue).Value.Symbol, obj)
 	return obj
 }
 
@@ -81,7 +81,7 @@ func CreateStructForm(slots []SyntaxValue, env *Env) Object {
 	nilObject, _ := env.GetEnvSymbol("#nil")
 
 	for _, slot := range slots {
-		slotObjects[slot.(Token).Symbol] = nilObject
+		slotObjects[slot.(SymbolValue).Value.Symbol] = nilObject
 	}
 
 	slotObjects["__str__"] = CallableObject{func(obj []Object, env *Env) Object {
@@ -103,12 +103,12 @@ func DefStructForm(declared_args []SyntaxValue, env *Env) Object {
 		structObject := CreateStructForm(declared_args[1:], env)
 		structSlots := structObject.GetSlots()
 		for i, _ := range declared_args[1:] {
-			structSlots[declared_args[i+1].(Token).Symbol] = args[i]
+			structSlots[declared_args[i+1].(SymbolValue).Value.Symbol] = args[i]
 		}
 		return structObject
 	}}
 
-	env.SetSymbol(declared_args[0].(Token).Symbol, constructor)
+	env.SetSymbol(declared_args[0].(SymbolValue).Value.Symbol, constructor)
 	return constructor
 }
 
@@ -117,7 +117,7 @@ func GetAttrForm(args []SyntaxValue, env *Env) Object {
 		panic("Unexpected number of arguments")
 	}
 	obj := EvalSyntax(args[0], env)
-	slot, ok := GetSlot(obj, args[1].(Token).Symbol)
+	slot, ok := GetSlot(obj, args[1].(SymbolValue).Value.Symbol)
 	if !ok {
 		panic("Slot not found")
 	}
@@ -130,13 +130,13 @@ func SetAttrForm(args []SyntaxValue, env *Env) Object {
 	}
 
 	slots := EvalSyntax(args[0], env).GetSlots()
-	_, ok := slots[args[1].(Token).Symbol]
+	_, ok := slots[args[1].(SymbolValue).Value.Symbol]
 	if !ok {
-		panic(fmt.Sprintf("Struct doesn't have slot '%s'.", args[1].(Token).Symbol))
+		panic(fmt.Sprintf("Struct doesn't have slot '%s'.", args[1].(SymbolValue).Value.Symbol))
 	}
 
 	object := EvalSyntax(args[2], env)
-	slots[args[1].(Token).Symbol] = object
+	slots[args[1].(SymbolValue).Value.Symbol] = object
 	return object
 }
 

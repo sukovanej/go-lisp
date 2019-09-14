@@ -48,11 +48,11 @@ func Eval(reader *bufio.Reader, env *Env) Object {
 }
 
 func EvalSyntax(value SyntaxValue, env *Env) Object {
-	switch value.(type) {
-	case Token:
-		return evalSymbol(value.(Token), env)
-	case []SyntaxValue:
-		return evalFunction(value.([]SyntaxValue), env)
+	switch value.GetType() {
+	case SYNTAX_SYMBOL:
+		return evalSymbol(value.(SymbolValue).Value, env)
+	case SYNTAX_LIST:
+		return evalFunction(value.(ListValue).Value, env)
 	}
 
 	panic("Unexpected syntax token.")

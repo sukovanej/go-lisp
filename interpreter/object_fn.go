@@ -19,9 +19,9 @@ func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *
 	return CallableObject{func(args []Object, _ *Env) Object {
 		internal_env := &Env{map[string]Object{}, env}
 		for i, declared_arg := range declared_args {
-			switch declared_arg.(type) {
-			case Token:
-				internal_env.Objects[declared_arg.(Token).Symbol] = args[i]
+			switch declared_arg.GetType() {
+			case SYNTAX_SYMBOL:
+				internal_env.Objects[declared_arg.(SymbolValue).Value.Symbol] = args[i]
 			default:
 				panic("not defined behaviour")
 			}
@@ -40,11 +40,11 @@ func CreateLambdaForm(args []SyntaxValue, env *Env) Object {
 		panic("Wrong number of arguments")
 	}
 
-	return createLambdaFunction(args[0].([]SyntaxValue), args[1:], env)
+	return createLambdaFunction(args[0].(ListValue).Value, args[1:], env)
 }
 
 func DefLambdaForm(args []SyntaxValue, env *Env) Object {
 	lambda := CreateLambdaForm(args[1:], env)
-	env.Objects[args[0].(Token).Symbol] = lambda
+	env.Objects[args[0].(SymbolValue).Value.Symbol] = lambda
 	return lambda
 }
