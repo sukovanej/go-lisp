@@ -26,11 +26,34 @@ func equalStrings(args []Object, env *Env) Object {
 	}
 }
 
+func itemStrings(args []Object, env *Env) Object {
+	first := args[0].(StringObject).String
+	i := args[1].(NumberObject).Integer
+	return StringObject{string(first[i])}
+}
+
+func sliceString(args []Object, env *Env) Object {
+	str := args[0].(StringObject).String
+	start := args[1].(NumberObject).Integer
+	end := args[2].(NumberObject).Integer
+
+	return StringObject{str[start:end]}
+}
+
+func lenString(args []Object, env *Env) Object {
+	str := args[0].(StringObject).String
+
+	return NumberObject{len(str)}
+}
+
 func (o StringObject) GetSlots() map[string]Object {
 	return map[string]Object{
-		"__+__":    CallableObject{addStrings},
-		"__==__":   CallableObject{equalStrings},
-		"__hash__": StringObject{"__str__" + o.String},
+		"__+__":     CallableObject{addStrings},
+		"__==__":    CallableObject{equalStrings},
+		"__hash__":  StringObject{"__str__" + o.String},
+		"__item__":  CallableObject{itemStrings},
+		"__slice__": CallableObject{sliceString},
+		"__len__":   CallableObject{lenString},
 		"__str__": CallableObject{func(_ []Object, _ *Env) Object {
 			return o
 		}},

@@ -214,10 +214,3 @@ func EnvCallable(args []Object, env *Env) Object {
 func ListCallable(args []Object, env *Env) Object {
 	return ListObject{args}
 }
-
-func SliceCallable(args []Object, env *Env) Object {
-	start := args[1].(NumberObject).Integer
-	end := args[2].(NumberObject).Integer
-
-	return ListObject{args[0].(ListObject).List[start:end]}
-}

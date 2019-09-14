@@ -129,7 +129,7 @@ func GetMainEnv() *Env {
 			"list":      CallableObject{ListCallable},
 			"len":       CallableObject{SlotCallable("__len__", 1)},
 			"<":         CallableObject{SlotCallable("__<__", 2)},
-			"slice":     CallableObject{SliceCallable},
+			"slice":     CallableObject{SlotCallable("__slice__", 3)},
 		},
 		nil,
 	}

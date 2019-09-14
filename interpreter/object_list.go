@@ -80,6 +80,13 @@ func strList(args []Object, env *Env) Object {
 	return StringObject{result}
 }
 
+func sliceList(args []Object, env *Env) Object {
+	start := args[1].(NumberObject).Integer
+	end := args[2].(NumberObject).Integer
+
+	return ListObject{args[0].(ListObject).List[start:end]}
+}
+
 func (o ListObject) GetSlots() map[string]Object {
 	return map[string]Object{
 		"__item__":     CallableObject{getList},
@@ -88,6 +95,7 @@ func (o ListObject) GetSlots() map[string]Object {
 		"__==__":       CallableObject{equalLists},
 		"__str__":      CallableObject{strList},
 		"__+__":        CallableObject{plusList},
-		"append":       CallableObject{appendList},
+		"__slice__":    CallableObject{sliceList},
+		"__append__":   CallableObject{appendList},
 	}
 }
