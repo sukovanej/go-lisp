@@ -43,6 +43,19 @@ func skipCommentsAndWhitespaces(r rune, err error, reader *bufio.Reader) (rune, 
 	return r, err
 }
 
+func createSpecialCharacter(r rune) rune {
+	switch r {
+	case 'n':
+		return '\n'
+	case 't':
+		return '\t'
+	case '"':
+		return '"'
+	default:
+		return r
+	}
+}
+
 func GetToken(reader *bufio.Reader) Token {
 	r, _, err := reader.ReadRune()
 	r, err = skipCommentsAndWhitespaces(r, err, reader)
@@ -63,6 +76,10 @@ func GetToken(reader *bufio.Reader) Token {
 		str := ""
 		r, _, err = reader.ReadRune()
 		for r != '"' {
+			if r == '\\' {
+				r, _, err = reader.ReadRune()
+				r = createSpecialCharacter(r)
+			}
 			str += string(r)
 			r, _, err = reader.ReadRune()
 		}

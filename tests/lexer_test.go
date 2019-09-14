@@ -252,3 +252,17 @@ func TestTokenDictAndList(t *testing.T) {
 		}
 	}
 }
+
+func TestTokenSpecialStringCharacters(t *testing.T) {
+	inputLexer = bufio.NewReader(strings.NewReader(`"\t\n\""`))
+	expectedResult := []Token{
+		Token{"\t\n\"", SYMBOL_STRING},
+	}
+
+	for _, token := range expectedResult {
+		expectedToken = GetToken(inputLexer)
+		if token != expectedToken {
+			t.Errorf("%v != %v.", token, expectedToken)
+		}
+	}
+}
