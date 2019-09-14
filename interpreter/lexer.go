@@ -10,6 +10,10 @@ type TokenType int
 const (
 	TOKEN_LPAR TokenType = iota
 	TOKEN_RPAR
+	TOKEN_LIST_LPAR
+	TOKEN_LIST_RPAR
+	TOKEN_DICT_LPAR
+	TOKEN_DICT_RPAR
 	SYMBOL
 	SYMBOL_STRING
 	END
@@ -45,12 +49,16 @@ func GetToken(reader *bufio.Reader) Token {
 
 	if r == '(' {
 		return Token{string(r), TOKEN_LPAR}
+	} else if r == '[' {
+		return Token{string(r), TOKEN_LIST_LPAR}
+	} else if r == '{' {
+		return Token{string(r), TOKEN_DICT_LPAR}
 	} else if r == ')' {
-		possibleSpace, _, _ := reader.ReadRune()
-		if possibleSpace != ' ' {
-			reader.UnreadRune()
-		}
 		return Token{string(r), TOKEN_RPAR}
+	} else if r == ']' {
+		return Token{string(r), TOKEN_LIST_RPAR}
+	} else if r == '}' {
+		return Token{string(r), TOKEN_DICT_RPAR}
 	} else if r == '"' {
 		str := ""
 		r, _, err = reader.ReadRune()
@@ -72,7 +80,7 @@ func GetToken(reader *bufio.Reader) Token {
 			break
 		}
 
-		if err == io.EOF || r == ')' {
+		if err == io.EOF || r == ')' || r == '}' || r == ']' {
 			reader.UnreadRune()
 			break
 		}

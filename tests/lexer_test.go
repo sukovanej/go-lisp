@@ -173,6 +173,7 @@ func TestTokenString(t *testing.T) {
 		}
 	}
 }
+
 func TestTokenStruct(t *testing.T) {
 	inputLexer = bufio.NewReader(strings.NewReader(`
 (set person (struct
@@ -206,6 +207,40 @@ func TestTokenStruct(t *testing.T) {
 		Token{"person", SYMBOL},
 		Token{"name", SYMBOL},
 		Token{")", TOKEN_RPAR},
+		Token{")", TOKEN_RPAR},
+		Token{"", END},
+	}
+
+	for _, token := range expectedResult {
+		expectedToken = GetToken(inputLexer)
+		if token != expectedToken {
+			t.Errorf("%v != %v.", token, expectedToken)
+		}
+	}
+}
+
+func TestTokenDictAndList(t *testing.T) {
+	inputLexer = bufio.NewReader(strings.NewReader(`
+(set l [1 2 3])
+(set d {"key" "value"})
+`))
+	expectedResult := []Token{
+		Token{"(", TOKEN_LPAR},
+		Token{"set", SYMBOL},
+		Token{"l", SYMBOL},
+		Token{"[", TOKEN_LIST_LPAR},
+		Token{"1", SYMBOL},
+		Token{"2", SYMBOL},
+		Token{"3", SYMBOL},
+		Token{"]", TOKEN_LIST_RPAR},
+		Token{")", TOKEN_RPAR},
+		Token{"(", TOKEN_LPAR},
+		Token{"set", SYMBOL},
+		Token{"d", SYMBOL},
+		Token{"{", TOKEN_DICT_LPAR},
+		Token{"key", SYMBOL_STRING},
+		Token{"value", SYMBOL_STRING},
+		Token{"}", TOKEN_DICT_RPAR},
 		Token{")", TOKEN_RPAR},
 		Token{"", END},
 	}

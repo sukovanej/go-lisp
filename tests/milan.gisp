@@ -1,2 +1,4 @@
 (defn milan (x) (if (!= x 0)
     ((fn () (println "milan je dement") (milan (- x 1))))))
+
+(milan 100)
