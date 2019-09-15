@@ -14,25 +14,16 @@ func IsDictObject(obj Object) bool {
 }
 
 type DictObjectEntry struct {
-	HashKey string
-	Key     Object
-	Value   Object
-	Next    *DictObjectEntry
+	Key   Object
+	Value Object
 }
 
 type DictObject struct {
-	// TODO: implement hashtable
-	Dict []*DictObjectEntry
+	Dict map[string]DictObjectEntry
 }
 
 func (d DictObject) Len() int {
-	result := 0
-	entry := d.Dict[0]
-	for entry != nil {
-		result++
-		entry = entry.Next
-	}
-	return result
+	return len(d.Dict)
 }
 
 func (d DictObject) Get(key Object, env *Env) Object {
@@ -41,17 +32,11 @@ func (d DictObject) Get(key Object, env *Env) Object {
 		return hashObject
 	}
 	hash := hashObject.(StringObject).String
-	entry := d.Dict[0]
-
-	for entry != nil {
-		if hash == entry.HashKey {
-			return entry.Value
-		}
-
-		entry = entry.Next
+	result, ok := d.Dict[hash]
+	if !ok {
+		panic("not found")
 	}
-
-	return nil
+	return result.Value
 }
 
 func (d DictObject) Set(key Object, value Object, env *Env) Object {
@@ -61,8 +46,7 @@ func (d DictObject) Set(key Object, value Object, env *Env) Object {
 		return hashObject
 	}
 	hash := hashObject.(StringObject).String
-	first := d.Dict[0]
-	d.Dict[0] = &DictObjectEntry{hash, key, value, first}
+	d.Dict[hash] = DictObjectEntry{key, value}
 	return nilObject
 }
 
@@ -96,8 +80,7 @@ func equalDicts(args []Object, env *Env) Object {
 			return BoolObject{false}
 		}
 
-		firstEntry := first.Dict[0]
-		for firstEntry != nil {
+		for _, firstEntry := range first.Dict {
 			secondEntry := second.Get(firstEntry.Key, env)
 			equal := Equal(firstEntry.Value, secondEntry, env)
 
@@ -108,8 +91,6 @@ func equalDicts(args []Object, env *Env) Object {
 			if secondEntry == nil || !equal.(BoolObject).Value {
 				return BoolObject{false}
 			}
-
-			firstEntry = firstEntry.Next
 		}
 	default:
 		return BoolObject{false}
@@ -151,8 +132,7 @@ func lenDict(args []Object, env *Env) Object {
 func strDict(args []Object, env *Env) Object {
 	dictObject := args[0].(DictObject)
 	result := "{"
-	entry := dictObject.Dict[0]
-	for entry != nil {
+	for _, entry := range dictObject.Dict {
 		keyObject := GetStr(entry.Key, env)
 		if IsErrorObject(keyObject) {
 			return keyObject
@@ -162,14 +142,9 @@ func strDict(args []Object, env *Env) Object {
 			return valueObject
 		}
 
-		result += keyObject.(StringObject).String + ": " + valueObject.(StringObject).String
-		entry = entry.Next
-
-		if entry != nil {
-			result += ", "
-		}
+		result += keyObject.(StringObject).String + ": " + valueObject.(StringObject).String + ", "
 	}
-	result += "}"
+	result = result[:len(result)-2] + "}"
 	return StringObject{result}
 }
 

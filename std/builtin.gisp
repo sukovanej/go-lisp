@@ -82,6 +82,7 @@
     ; [1, 4, 9, 16]
     (if (empty l) [] (append (p (last l)) (map p (head l)))))
 
+
 (defn split (delimiter str)
     ; split the str by delimiter
     ; >> (split "hello world" " ")
@@ -107,11 +108,17 @@
         (+ (first l) (if (empty tail-l) "" delimiter) (join delimiter tail-l))))
 
 
-(defn for (callable l)
+(defform for (callable l)
     ; do side-effect on a list
-    ; >> (for (fn (item) (println item)) (map str [1 2 3]))
+    ; >> (for (println #i) (map str [1 2 3]))
     ; 1
     ; 2
     ; 3
-    (if (not (empty l))
-        (progn (callable (first l)) (for callable (tail l)))))
+    (set eval-l (eval l))
+    (defn _for (ll)
+        (if (not (empty ll))
+            (progn 
+                (set #i (first ll))
+                (eval callable)
+                (_for (tail ll)))))
+    (_for eval-l))

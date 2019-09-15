@@ -136,7 +136,10 @@ func evalFunction(list []SyntaxValue, env *Env) Object {
 		}
 		return result
 	case FormObject:
-		args := list[1:len(list)]
+		args := []Object{}
+		for _, arg := range list[1:len(list)] {
+			args = append(args, SyntaxObject{arg})
+		}
 		result := function.(FormObject).Callable(args, env)
 		if IsErrorObject(result) {
 			result = result.(ErrorObject).TraceErrorWithSyntaxValue(list[0], "")
@@ -191,6 +194,9 @@ func GetMainEnv() *Env {
 			"apply":     CallableObject{ApplyCallable},
 			"@args":     CallableObject{CommandLineArgumentsCallable},
 			"progn":     FormObject{PrognForm},
+			"defform":   FormObject{DefFormForm},
+			"eval":      CallableObject{EvalCallable},
+			"'":         FormObject{QuoteForm},
 		},
 		nil,
 	}

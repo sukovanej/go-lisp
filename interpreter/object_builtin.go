@@ -32,19 +32,19 @@ func Equal(left Object, right Object, env *Env) Object {
 	return operatorCallable([]Object{left, right}, env)
 }
 
-func SetForm(args []SyntaxValue, env *Env) Object {
+func SetForm(args []Object, env *Env) Object {
 	if len(args) != 2 {
-		return NewErrorWithSyntaxValue(args[0], fmt.Sprintf("Form set expects 2 arguments, %d given.", len(args)))
+		return NewErrorWithSyntaxValue(args[0].(SyntaxObject).Value, fmt.Sprintf("Form set expects 2 arguments, %d given.", len(args)))
 	}
 
-	obj := EvalSyntax(args[1], env)
-	env.SetSymbol(args[0].(SymbolValue).Value.Symbol, obj)
+	obj := EvalSyntax(args[1].(SyntaxObject).Value, env)
+	env.SetSymbol(args[0].(SyntaxObject).Value.(SymbolValue).Value.Symbol, obj)
 	return obj
 }
 
 func AssertCallable(args []Object, env *Env) Object {
 	if len(args) != 2 {
-		return NewErrorWithoutToken(fmt.Sprintf("Form assert expects 2 arguments, %d given.", len(args)))
+		return NewErrorWithoutToken(fmt.Sprintf("Callable assert expects 2 arguments, %d given.", len(args)))
 	}
 
 	eqFunc, _ := env.GetEnvSymbol("==")
@@ -94,12 +94,12 @@ func PrintlnCallable(args []Object, env *Env) Object {
 	return result
 }
 
-func CreateStructForm(slots []SyntaxValue, env *Env) Object {
+func CreateStructForm(slots []Object, env *Env) Object {
 	slotObjects := map[string]Object{}
 	nilObject, _ := env.GetEnvSymbol("#nil")
 
 	for _, slot := range slots {
-		slotObjects[slot.(SymbolValue).Value.Symbol] = nilObject
+		slotObjects[slot.(SyntaxObject).Value.(SymbolValue).Value.Symbol] = nilObject
 	}
 
 	slotObjects["__str__"] = CallableObject{func(obj []Object, env *Env) Object {
@@ -116,45 +116,45 @@ func CreateStructForm(slots []SyntaxValue, env *Env) Object {
 	return StructObject{slotObjects}
 }
 
-func DefStructForm(declared_args []SyntaxValue, env *Env) Object {
+func DefStructForm(declared_args []Object, env *Env) Object {
 	constructor := CallableObject{func(args []Object, _ *Env) Object {
 		structObject := CreateStructForm(declared_args[1:], env)
 		structSlots := structObject.GetSlots()
 		for i, _ := range declared_args[1:] {
-			structSlots[declared_args[i+1].(SymbolValue).Value.Symbol] = args[i]
+			structSlots[declared_args[i+1].(SyntaxObject).Value.(SymbolValue).Value.Symbol] = args[i]
 		}
 		return structObject
 	}}
 
-	env.SetSymbol(declared_args[0].(SymbolValue).Value.Symbol, constructor)
+	env.SetSymbol(declared_args[0].(SyntaxObject).Value.(SymbolValue).Value.Symbol, constructor)
 	return constructor
 }
 
-func GetAttrForm(args []SyntaxValue, env *Env) Object {
+func GetAttrForm(args []Object, env *Env) Object {
 	if len(args) != 2 {
 		panic("Unexpected number of arguments")
 	}
-	obj := EvalSyntax(args[0], env)
-	slot, ok := GetSlot(obj, args[1].(SymbolValue).Value.Symbol)
+	obj := EvalSyntax(args[0].(SyntaxObject).Value, env)
+	slot, ok := GetSlot(obj, args[1].(SyntaxObject).Value.(SymbolValue).Value.Symbol)
 	if !ok {
-		panic(fmt.Sprintf("Slot %s not found", args[1].(SymbolValue).Value.Symbol))
+		panic(fmt.Sprintf("Slot %s not found", args[1].(SyntaxObject).Value.(SymbolValue).Value.Symbol))
 	}
 	return slot
 }
 
-func SetAttrForm(args []SyntaxValue, env *Env) Object {
+func SetAttrForm(args []Object, env *Env) Object {
 	if len(args) != 3 {
 		panic("Unexpected number of arguments")
 	}
 
-	slots := EvalSyntax(args[0], env).GetSlots()
-	_, ok := slots[args[1].(SymbolValue).Value.Symbol]
+	slots := EvalSyntax(args[0].(SyntaxObject).Value, env).GetSlots()
+	_, ok := slots[args[1].(SyntaxObject).Value.(SymbolValue).Value.Symbol]
 	if !ok {
-		panic(fmt.Sprintf("Struct doesn't have slot '%s'.", args[1].(SymbolValue).Value.Symbol))
+		panic(fmt.Sprintf("Struct doesn't have slot '%s'.", args[1].(SyntaxObject).Value.(SymbolValue).Value.Symbol))
 	}
 
-	object := EvalSyntax(args[2], env)
-	slots[args[1].(SymbolValue).Value.Symbol] = object
+	object := EvalSyntax(args[2].(SyntaxObject).Value, env)
+	slots[args[1].(SyntaxObject).Value.(SymbolValue).Value.Symbol] = object
 	return object
 }
 
@@ -199,7 +199,7 @@ func ImportCallable(args []Object, env *Env) Object {
 }
 
 func DictCallable(args []Object, env *Env) Object {
-	dictObject := DictObject{[]*DictObjectEntry{nil}}
+	dictObject := DictObject{map[string]DictObjectEntry{}}
 	if len(args)%2 != 0 {
 		panic("Expecetd key-value pairs are arguments")
 	}
@@ -233,13 +233,13 @@ func ListCallable(args []Object, env *Env) Object {
 	return ListObject{args}
 }
 
-func AndForm(args []SyntaxValue, env *Env) Object {
+func AndForm(args []Object, env *Env) Object {
 	if len(args) == 0 {
 		panic("Wrong number of arguments")
 	}
 
 	for _, arg := range args {
-		value := EvalSyntax(arg, env)
+		value := EvalSyntax(arg.(SyntaxObject).Value, env)
 		if !value.(BoolObject).Value {
 			f, _ := env.GetEnvSymbol("#f")
 			return f
@@ -250,13 +250,13 @@ func AndForm(args []SyntaxValue, env *Env) Object {
 	return t
 }
 
-func OrForm(args []SyntaxValue, env *Env) Object {
+func OrForm(args []Object, env *Env) Object {
 	if len(args) == 0 {
 		return NewErrorWithoutToken(fmt.Sprintf("Callable or expects at least 1 argument, 0 given."))
 	}
 
 	for _, arg := range args {
-		value := EvalSyntax(arg, env)
+		value := EvalSyntax(arg.(SyntaxObject).Value, env)
 
 		if IsErrorObject(value) {
 			return value
@@ -337,14 +337,34 @@ func CommandLineArgumentsCallable(args []Object, env *Env) Object {
 	return ListObject{listObjects}
 }
 
-func PrognForm(args []SyntaxValue, env *Env) Object {
+func PrognForm(args []Object, env *Env) Object {
 	last, _ := env.GetEnvSymbol("#nil")
 	for _, statement := range args {
-		last := EvalSyntax(statement, env)
+		last := EvalSyntax(statement.(SyntaxObject).Value, env)
 
 		if IsErrorObject(last) {
 			return last
 		}
 	}
 	return last
+}
+
+func EvalCallable(args []Object, env *Env) Object {
+	if len(args) != 1 && len(args) != 2 {
+		return NewErrorWithoutToken(fmt.Sprintf("Callable eval expects 2 or 1 arguments, %d given.", len(args)))
+	}
+
+	if !IsSyntaxObject(args[0]) {
+		return NewErrorWithoutToken(fmt.Sprintf("Object must be syntax object."))
+	}
+
+	return EvalSyntax(args[0].(SyntaxObject).Value, env)
+}
+
+func QuoteForm(args []Object, env *Env) Object {
+	if len(args) != 1 {
+		return NewErrorWithoutToken(fmt.Sprintf("Callable eval expects 1 argument, %d given.", len(args)))
+	}
+
+	return args[0]
 }

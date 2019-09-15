@@ -3,7 +3,7 @@ package interpreter
 import "fmt"
 
 type FormObject struct {
-	Callable func([]SyntaxValue, *Env) Object
+	Callable func([]Object, *Env) Object
 }
 
 func (o FormObject) GetSlots() map[string]Object {
@@ -15,8 +15,8 @@ func (o FormObject) GetSlots() map[string]Object {
 	}
 }
 
-func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *Env) CallableObject {
-	return CallableObject{func(args []Object, _ *Env) Object {
+func createCallable(declared_args []SyntaxValue, body []SyntaxValue, env *Env) func([]Object, *Env) Object {
+	return func(args []Object, _ *Env) Object {
 		internal_env := &Env{map[string]Object{}, env}
 		isVariadic := len(declared_args) != 0 && declared_args[len(declared_args)-1].(SymbolValue).Value.Type == SYMBOL_VARIADIC
 
@@ -51,20 +51,33 @@ func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *
 			}
 		}
 		return last
-	}}
+	}
 }
 
-func CreateLambdaForm(args []SyntaxValue, env *Env) Object {
+func createLambdaFunction(declared_args []SyntaxValue, body []SyntaxValue, env *Env) CallableObject {
+	return CallableObject{createCallable(declared_args, body, env)}
+}
+
+func createLambdaForm(declared_args []SyntaxValue, body []SyntaxValue, env *Env) FormObject {
+	return FormObject{createCallable(declared_args, body, env)}
+}
+
+func CreateLambdaForm(args []Object, env *Env) Object {
 	if len(args) < 2 {
 		panic("Wrong number of arguments")
 	}
 
-	return createLambdaFunction(args[0].(ListValue).Value, args[1:], env)
+	bodyArgs := []SyntaxValue{}
+	for _, arg := range args[1:] {
+		bodyArgs = append(bodyArgs, arg.(SyntaxObject).Value)
+	}
+
+	return createLambdaFunction(args[0].(SyntaxObject).Value.(ListValue).Value, bodyArgs, env)
 }
 
-func DefLambdaForm(args []SyntaxValue, env *Env) Object {
+func DefLambdaForm(args []Object, env *Env) Object {
 	lambda := CreateLambdaForm(args[1:], env)
-	env.Objects[args[0].(SymbolValue).Value.Symbol] = lambda
+	env.Objects[args[0].(SyntaxObject).Value.(SymbolValue).Value.Symbol] = lambda
 	return lambda
 }
 
@@ -75,4 +88,23 @@ func IsCallableObject(obj Object) bool {
 	default:
 		return false
 	}
+}
+
+func CreateFormForm(args []Object, env *Env) Object {
+	if len(args) < 2 {
+		return NewErrorWithSyntaxValue(args[0].(SyntaxObject).Value, fmt.Sprintf("Expected 2 arguments, %d given.", len(args)))
+	}
+
+	bodyArgs := []SyntaxValue{}
+	for _, arg := range args[1:] {
+		bodyArgs = append(bodyArgs, arg.(SyntaxObject).Value)
+	}
+
+	return createLambdaForm(args[0].(SyntaxObject).Value.(ListValue).Value, bodyArgs, env)
+}
+
+func DefFormForm(args []Object, env *Env) Object {
+	lambda := CreateFormForm(args[1:], env)
+	env.Objects[args[0].(SyntaxObject).Value.(SymbolValue).Value.Symbol] = lambda
+	return lambda
 }

@@ -6,17 +6,15 @@
 (defn docker-stop () 
     (set containers ((. (? map (? item 0)) tail columnize @sh) "docker ps"))
     (println "stopping these containers: " containers)
-    (for (fn (container)
-            (progn
-                (@sh (+ "docker stop " container))
-                (print "."))) containers)
+    (for (progn
+            (@sh (+ "docker stop " #item))
+            (print ".")) containers)
     (println "\ndone"))
 
 (defn docker-start (images) 
-    (for (fn (image)
-            (progn
-                (@sh (+ "docker start " image))
-                (print "."))) images)
+    (for (progn
+            (@sh (+ "docker start " #item))
+            (print ".")) images)
     (println "\ndone"))
 
 (cond
