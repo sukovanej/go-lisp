@@ -108,17 +108,24 @@
         (+ (first l) (if (empty tail-l) "" delimiter) (join delimiter tail-l))))
 
 
-(defform for (callable l)
+(defn for (callable l)
     ; do side-effect on a list
     ; >> (for (println #i) (map str [1 2 3]))
     ; 1
     ; 2
     ; 3
-    (set eval-l (eval l))
     (defn _for (ll)
         (if (not (empty ll))
-            (progn 
-                (set #i (first ll))
-                (eval callable)
+            (progn
+                (callable (first ll))
                 (_for (tail ll)))))
-    (_for eval-l))
+    (_for l))
+
+
+(defn zip (a b)
+    ; zip two lists
+    ; >> (zip [1 2] [3 4])
+    ; [[1 3] [2 4]]
+    (if (or (empty a) (empty b))
+        []
+        (prepend [(first a) (first b)] (zip (tail a) (tail b)))))

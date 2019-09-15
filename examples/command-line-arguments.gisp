@@ -3,21 +3,23 @@
 
 (set arguments (slice 2 (len (@args)) (@args)))
 
-(defn docker-stop () 
+(defn docker-ps ()
+    (set containers ((. (? map (? slice 0 2)) tail columnize @sh) "docker ps"))
+    (println containers))
+
+(defn docker-stop ()
     (set containers ((. (? map (? item 0)) tail columnize @sh) "docker ps"))
     (println "stopping these containers: " containers)
-    (for (progn
-            (@sh (+ "docker stop " #item))
-            (print ".")) containers)
-    (println "\ndone"))
+    (for (. @sh (? + "docker stop ")) containers)
+    (println "done"))
 
-(defn docker-start (images) 
-    (for (progn
-            (@sh (+ "docker start " #item))
-            (print ".")) images)
-    (println "\ndone"))
+(defn docker-start (images)
+    (for (. @sh (? + "docker start ")) images)
+    (println "done"))
 
 (cond
+    (and (== (len arguments) 1) (== (item 0 arguments) "ps"))
+        (docker-ps)
     (and (== (len arguments) 1) (== (item 0 arguments) "stop"))
         (docker-stop)
     (and (> (len arguments) 1) (== (item 0 arguments) "start"))
