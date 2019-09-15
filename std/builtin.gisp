@@ -114,12 +114,10 @@
     ; 1
     ; 2
     ; 3
-    (defn _for (ll)
-        (if (not (empty ll))
-            (progn
-                (callable (first ll))
-                (_for (tail ll)))))
-    (_for l))
+    (if (not (empty l))
+        (progn
+            (callable (first l))
+            (for callable (tail l)))))
 
 
 (defn zip (a b)
